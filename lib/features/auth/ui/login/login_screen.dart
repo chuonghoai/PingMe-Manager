@@ -1,7 +1,9 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, use_super_parameters
 
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/shared/ui/otp_verify/otp_verify_screen.dart';
 import 'login_controller.dart';
+import '../../../../main.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
@@ -35,18 +37,28 @@ class _LoginScreenState extends State<LoginScreen> {
   // Handle: Login
   void _handleLogin() async {
     FocusScope.of(context).unfocus();
-
     bool success = await _controller.login(
       _emailController.text.trim(),
       _passwordController.text,
     );
 
     if (success) {
-      // TODO: Thành công -> Chuyển hướng sang màn Verify OTP
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Vui lòng kiểm tra email để lấy mã OTP!"),
-          backgroundColor: Color(0xFF34C759),
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => OtpVerifyScreen(
+            title: "Xác thực đăng nhập",
+            onVerify: (otp) async {
+              bool isVerified = await _controller.verifyOtp(otp);
+              
+              if (isVerified) {
+                navigatorKey.currentState?.pushNamedAndRemoveUntil('/home', (route) => false);
+              } else {
+                throw Exception(_controller.errorMessage);
+              }
+            },
+          ),
         ),
       );
     }
