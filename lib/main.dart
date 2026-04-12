@@ -5,28 +5,8 @@ import 'core/network/api_client.dart';
 import 'core/network/api_response.dart';
 import 'core/storage/local_storage.dart';
 import 'features/auth/ui/login/login_screen.dart';
+import 'features/home/ui/home_screen.dart';
 import 'main.dart';
-
-// Dummy home screen tmp
-class DummyHomeScreen extends StatelessWidget {
-  const DummyHomeScreen({Key? key}) : super(key: key);
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Trang chủ Admin')),
-      body: Center(
-        child: ElevatedButton(
-          onPressed: () async {
-            // Đăng xuất thử
-            await LocalStorage.clearAll();
-            navigatorKey.currentState?.pushReplacementNamed('/login');
-          },
-          child: const Text('Đăng xuất'),
-        ),
-      ),
-    );
-  }
-}
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -75,7 +55,7 @@ class MyApp extends StatelessWidget {
       initialRoute: initialRoute,
       routes: {
         '/login': (context) => const LoginScreen(),
-        '/home': (context) => const DummyHomeScreen(), // Dummy home tmp
+        '/home': (context) => const HomeScreen(),
       },
     );
   }
