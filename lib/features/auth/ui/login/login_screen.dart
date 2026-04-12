@@ -1,6 +1,7 @@
 // ignore_for_file: deprecated_member_use, use_build_context_synchronously, use_super_parameters
 
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/features/auth/ui/forgotPassword/verify_email_screen.dart';
 import 'package:pingme_manager/shared/ui/otp_verify/otp_verify_screen.dart';
 import 'login_controller.dart';
 import '../../../../main.dart';
@@ -51,9 +52,12 @@ class _LoginScreenState extends State<LoginScreen> {
             title: "Xác thực đăng nhập",
             onVerify: (otp) async {
               bool isVerified = await _controller.verifyOtp(otp);
-              
+
               if (isVerified) {
-                navigatorKey.currentState?.pushNamedAndRemoveUntil('/home', (route) => false);
+                navigatorKey.currentState?.pushNamedAndRemoveUntil(
+                  '/home',
+                  (route) => false,
+                );
               } else {
                 throw Exception(_controller.errorMessage);
               }
@@ -218,25 +222,59 @@ class _LoginScreenState extends State<LoginScreen> {
                         ),
                         const SizedBox(height: 12),
 
-                        // Remember me?
                         Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            SizedBox(
-                              width: 24,
-                              height: 24,
-                              child: Checkbox(
-                                value: _controller.rememberMe,
-                                activeColor: amberGold,
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(4),
+                            // Remember me?
+                            Row(
+                              children: [
+                                SizedBox(
+                                  width: 24,
+                                  height: 24,
+                                  child: Checkbox(
+                                    value: _controller.rememberMe,
+                                    activeColor: amberGold,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(4),
+                                    ),
+                                    onChanged: _controller.toggleRememberMe,
+                                  ),
                                 ),
-                                onChanged: _controller.toggleRememberMe,
-                              ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  "Ghi nhớ đăng nhập",
+                                  style: TextStyle(
+                                    color: textMain,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                              ],
                             ),
-                            const SizedBox(width: 8),
-                            Text(
-                              "Ghi nhớ đăng nhập",
-                              style: TextStyle(color: textMain, fontSize: 14),
+
+                            // Forgot password?
+                            TextButton(
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) =>
+                                        const VerifyEmailScreen(),
+                                  ),
+                                );
+                              },
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              ),
+                              child: Text(
+                                "Quên mật khẩu?",
+                                style: TextStyle(
+                                  color: amberGold,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
                             ),
                           ],
                         ),

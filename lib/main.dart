@@ -1,6 +1,7 @@
-// ignore_for_file: unused_import
+// ignore_for_file: unused_import, use_super_parameters
 
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/features/auth/ui/forgotPassword/verify_email_screen.dart';
 import 'core/network/api_client.dart';
 import 'core/network/api_response.dart';
 import 'core/storage/local_storage.dart';
