@@ -43,6 +43,7 @@ class AuthService {
       if (apiResponse.success && apiResponse.data != null) {
         final data = apiResponse.data;
         await LocalStorage.setToken(data['accessToken']);
+        await LocalStorage.setRefreshToken(data['refreshToken']);
         await LocalStorage.setUser(data['user']);
         
         return null;

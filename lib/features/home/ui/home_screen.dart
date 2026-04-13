@@ -88,7 +88,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 ],
               ),
             ),
-            const Icon(Icons.settings_outlined, color: Colors.white),
+            IconButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/setting');
+              },
+              icon: const Icon(Icons.settings_outlined, color: Colors.white),
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(),
+            ),
           ],
         ),
       ),

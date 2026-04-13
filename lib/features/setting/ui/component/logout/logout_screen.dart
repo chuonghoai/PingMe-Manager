@@ -1,3 +1,5 @@
+// ignore_for_file: use_super_parameters
+
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/setting/ui/component/logout/logout_controller.dart';
 
@@ -14,7 +16,14 @@ class _LogoutScreenState extends State<LogoutScreen> {
   @override
   void initState() {
     super.initState();
-    _controller.handleLogout();
+    _executeLogout();
+  }
+
+  Future<void> _executeLogout() async {
+    final isDone = await _controller.processLogout();
+    if (isDone && mounted) {
+      Navigator.pushNamedAndRemoveUntil(context, '/login', (route) => false);
+    }
   }
 
   @override
@@ -25,13 +34,15 @@ class _LogoutScreenState extends State<LogoutScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            CircularProgressIndicator(
-              color: Color(0xFFF5A623),
-            ),
+            CircularProgressIndicator(color: Color(0xFFF5A623)),
             SizedBox(height: 24),
             Text(
               'Đang đăng xuất...',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.grey),
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey,
+              ),
             ),
           ],
         ),
