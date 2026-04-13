@@ -2,6 +2,9 @@
 
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/auth/ui/forgotPassword/verify_email_screen.dart';
+import 'package:pingme_manager/features/setting/ui/component/logout/logout_screen.dart';
+import 'package:pingme_manager/features/setting/ui/component/profile_setting/profile_setting_screen.dart';
+import 'package:pingme_manager/features/setting/ui/setting_screen.dart';
 import 'core/network/api_client.dart';
 import 'core/network/api_response.dart';
 import 'core/storage/local_storage.dart';
@@ -57,6 +60,9 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
+        '/setting': (context) => const SettingScreen(),
+        '/setting/profile': (context) => const ProfileSettingScreen(),
+        '/logout': (context) => const LogoutScreen(),
       },
     );
   }

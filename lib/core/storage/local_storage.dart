@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class LocalStorage {
   static const String _tokenKey = 'access_token';
+  static const String _refreshTokenKey = 'refresh_token';
   static const String _userKey = 'user_profile';
 
   /// Token manager
@@ -19,6 +20,22 @@ class LocalStorage {
   static Future<void> clearToken() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
+  }
+
+  /// Refresh token manager
+  static Future<void> setRefreshToken(String refreshToken) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_refreshTokenKey, refreshToken);
+  }
+
+  static Future<String?> getRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_refreshTokenKey);
+  }
+
+  static Future<void> clearRefreshToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.remove(_refreshTokenKey);
   }
 
   /// User manager

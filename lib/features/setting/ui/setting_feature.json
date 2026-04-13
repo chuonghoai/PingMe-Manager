@@ -1,0 +1,23 @@
+[
+  {
+    "icon": "person_outline",
+    "title": "Thông tin tài khoản",
+    "route": "/setting/profile"
+  },
+  {
+    "icon": "notifications_none",
+    "title": "Cài đặt thông báo",
+    "route": "/setting/notification"
+  },
+  {
+    "icon": "lock_outline",
+    "title": "Bảo mật",
+    "route": "/setting/security"
+  },
+  {
+    "icon": "logout",
+    "title": "Đăng xuất",
+    "route": "/logout",
+    "isDestructive": true
+  }
+]
