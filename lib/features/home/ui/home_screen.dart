@@ -1,6 +1,7 @@
 // ignore_for_file: use_super_parameters, deprecated_member_use
 
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import 'home_controller.dart';
 import 'widget/user_action_bottom_sheet.dart';
 
@@ -292,6 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FA),
+      floatingActionButton: const ChatBubbleWidget(),
       body: AnimatedBuilder(
         animation: _controller,
         builder: (context, child) {
