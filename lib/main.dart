@@ -5,6 +5,7 @@ import 'package:pingme_manager/features/auth/ui/forgotPassword/verify_email_scre
 import 'package:pingme_manager/features/setting/ui/component/logout/logout_screen.dart';
 import 'package:pingme_manager/features/setting/ui/component/profile_setting/profile_setting_screen.dart';
 import 'package:pingme_manager/features/setting/ui/setting_screen.dart';
+import 'package:pingme_manager/features/user_profile/ui/user_profile_screen.dart';
 import 'core/network/api_client.dart';
 import 'core/network/api_response.dart';
 import 'core/storage/local_storage.dart';
@@ -60,9 +61,22 @@ class MyApp extends StatelessWidget {
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
+
+        // Setting
         '/setting': (context) => const SettingScreen(),
         '/setting/profile': (context) => const ProfileSettingScreen(),
         '/logout': (context) => const LogoutScreen(),
+      },
+      onGenerateRoute: (settings) {
+        // User profile
+        if (settings.name == '/user-profile') {
+          final String userId = settings.arguments as String;
+
+          return MaterialPageRoute(
+            builder: (context) => UserProfileScreen(userId: userId),
+          );
+        }
+        return null;
       },
     );
   }

@@ -220,6 +220,13 @@ class _HomeScreenState extends State<HomeScreen> {
               horizontal: 16,
               vertical: 8,
             ),
+            onTap: () {
+              Navigator.pushNamed(
+                context, 
+                '/user-profile', 
+                arguments: user.id,
+              );
+            },
             leading: CircleAvatar(
               radius: 22,
               backgroundColor: Colors.grey.shade200,
