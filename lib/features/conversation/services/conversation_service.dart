@@ -44,6 +44,12 @@ class ConversationService {
 
     final int index = currentList.indexWhere((c) => c.id == conversationId);
 
+    int currentTotalUnread = 0;
+    for (var conv in currentList) {
+      currentTotalUnread += conv.unreadCount;
+    }
+    final int newTotalUnread = currentTotalUnread + 1;
+
     if (index != -1) {
       final existingConv = currentList[index];
       final updatedConv = existingConv.copyWith(
@@ -52,17 +58,11 @@ class ConversationService {
         unreadCount: existingConv.unreadCount + 1,
       );
 
-      int total = 0;
-      for (var conv in currentList) {
-        total += conv.unreadCount;
-      }
-      if (index == -1) total += 1;
-
       return ProcessedMessageResult(
         isExisting: true,
         oldIndex: index,
         updatedConv: updatedConv,
-        totalUnreadCount: total,
+        totalUnreadCount: newTotalUnread,
       );
     } else {
       final Map<String, dynamic>? convData = socketData['conversation'];
@@ -88,6 +88,7 @@ class ConversationService {
       return ProcessedMessageResult(
         isExisting: false, 
         updatedConv: newConv,
+        totalUnreadCount: newTotalUnread,
       );
     }
   }
