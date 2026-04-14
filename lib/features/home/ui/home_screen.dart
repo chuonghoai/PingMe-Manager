@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'home_controller.dart';
+import 'widget/user_action_bottom_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -272,7 +273,12 @@ class _HomeScreenState extends State<HomeScreen> {
             trailing: IconButton(
               icon: const Icon(Icons.more_horiz, color: Colors.grey),
               onPressed: () {
-                // TODO
+                showModalBottomSheet(
+                  context: context,
+                  backgroundColor: Colors.transparent,
+                  isScrollControlled: true,
+                  builder: (context) => UserActionBottomSheet(userId: user.id),
+                );
               },
             ),
           ),
