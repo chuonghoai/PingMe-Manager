@@ -1,6 +1,7 @@
 import 'package:dio/dio.dart';
 import 'package:pingme_manager/core/storage/local_storage.dart';
 import 'package:pingme_manager/features/setting/repository/setting_repository.dart';
+import 'package:pingme_manager/shared/websocket/websocket_gateway.dart';
 
 class SettingService {
   final SettingRepository _settingRepository = SettingRepository();
@@ -8,6 +9,8 @@ class SettingService {
   // Logout
   Future<Map<String, dynamic>> logout() async {
     try {
+      WebsocketGateway().disconnect();
+
       // Get refresh token
       final String? refreshToken = await LocalStorage.getRefreshToken();
       if (refreshToken == null || refreshToken.isEmpty) {

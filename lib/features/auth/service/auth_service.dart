@@ -1,4 +1,5 @@
 import 'package:dio/dio.dart';
+import 'package:pingme_manager/shared/websocket/websocket_gateway.dart';
 import '../../../core/storage/local_storage.dart';
 import 'dto/response/login_response_model.dart';
 import '../repository/auth_repository.dart';
@@ -45,6 +46,8 @@ class AuthService {
         await LocalStorage.setToken(data['accessToken']);
         await LocalStorage.setRefreshToken(data['refreshToken']);
         await LocalStorage.setUser(data['user']);
+
+        await WebsocketGateway().connect();
         
         return null;
       } else {

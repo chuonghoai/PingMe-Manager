@@ -1,4 +1,4 @@
-// ignore_for_file: unused_import, use_super_parameters
+// ignore_for_file: unused_import, use_super_parameters, avoid_print
 
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/auth/ui/forgotPassword/verify_email_screen.dart';
@@ -12,6 +12,7 @@ import 'core/storage/local_storage.dart';
 import 'features/auth/ui/login/login_screen.dart';
 import 'features/home/ui/home_screen.dart';
 import 'main.dart';
+import 'shared/websocket/websocket_gateway.dart';
 
 final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
@@ -32,6 +33,8 @@ void main() async {
         if (apiResponse.data != null) {
           await LocalStorage.setUser(apiResponse.data);
         }
+
+        await WebsocketGateway().connect();
       }
     } catch (e) {
       await LocalStorage.clearAll();
@@ -42,10 +45,41 @@ void main() async {
   runApp(MyApp(initialRoute: initialRoute));
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   final String initialRoute;
-
   const MyApp({Key? key, required this.initialRoute}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.detached:
+        print('[App Lifecycle] App Detached -> Đang ngắt Websocket...');
+        WebsocketGateway().disconnect();
+        break;
+      case AppLifecycleState.resumed:
+        WebsocketGateway().connect();
+        break;
+      default:
+        break;
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -57,7 +91,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFF5A623)),
         useMaterial3: true,
       ),
-      initialRoute: initialRoute,
+      initialRoute: widget.initialRoute,
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const HomeScreen(),
