@@ -1,6 +1,7 @@
 // ignore_for_file: use_super_parameters, deprecated_member_use, curly_braces_in_flow_control_structures
 
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/features/user_profile/ui/widget/action_icon_widget.dart';
 import 'user_profile_controller.dart';
 import 'package:intl/intl.dart';
 import 'widget/info_row_widget.dart';
@@ -126,6 +127,38 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ),
                   ),
                 ],
+
+                const SizedBox(height: 30),
+
+                // Action buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ActionIconWidget(
+                      icon: Icons.phone,
+                      color: Colors.green,
+                      onTap: () {
+                        // TODO: Gọi thoại
+                      },
+                    ),
+                    const SizedBox(width: 24),
+                    ActionIconWidget(
+                      icon: Icons.videocam,
+                      color: Colors.blue,
+                      onTap: () {
+                        // TODO: Gọi Video
+                      },
+                    ),
+                    const SizedBox(width: 24),
+                    ActionIconWidget(
+                      icon: Icons.message,
+                      color: Color(0xFFF5A623),
+                      onTap: () {
+                        // TODO: Nhắn tin
+                      },
+                    ),
+                  ],
+                ),
 
                 const SizedBox(height: 30),
 
