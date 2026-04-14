@@ -13,7 +13,13 @@ class ConversationService {
       if (res.success && res.data != null) {
         final List<dynamic> list = res.data;
         final conversations = list.map((e) => ConversationModel.fromJson(e)).toList();
-        return {'success': true, 'data': conversations, 'error': null};
+
+        int totalUnread = 0;
+        for (var conv in conversations) {
+          totalUnread += conv.unreadCount;
+        }
+
+        return {'success': true, 'data': conversations, 'error': null, 'totalUnreadCount': totalUnread};
       }
       return {'success': false, 'error': res.message ?? 'Lỗi tải dữ liệu'};
     } on DioException catch (e) {
@@ -46,10 +52,17 @@ class ConversationService {
         unreadCount: existingConv.unreadCount + 1,
       );
 
+      int total = 0;
+      for (var conv in currentList) {
+        total += conv.unreadCount;
+      }
+      if (index == -1) total += 1;
+
       return ProcessedMessageResult(
         isExisting: true,
         oldIndex: index,
         updatedConv: updatedConv,
+        totalUnreadCount: total,
       );
     } else {
       final Map<String, dynamic>? convData = socketData['conversation'];

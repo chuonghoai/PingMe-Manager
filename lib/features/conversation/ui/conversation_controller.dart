@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import '../services/conversation_service.dart';
 import '../services/conversation_socket.dart';
 import '../models/conversation_model.dart';
@@ -22,6 +23,7 @@ class ConversationController extends ChangeNotifier {
 
     if (result['success'] == true) {
       conversations = result['data'];
+      ChatBubbleWidget.unreadCounter.value = result['totalUnreadCount'];
       _setupWebsocket();
     } else {
       errorMessage = result['error'];
@@ -41,6 +43,8 @@ class ConversationController extends ChangeNotifier {
   void _setupWebsocket() {
     _socket.listenToNewMessages((data) {
       final result = _service.processIncomingMessage(conversations, data);
+
+      ChatBubbleWidget.unreadCounter.value = result.totalUnreadCount;
 
       if (result.updatedConv != null) {
         if (result.isExisting) {
@@ -92,6 +96,9 @@ class ConversationController extends ChangeNotifier {
   void markAsReadLocally(String conversationId) {
     final index = conversations.indexWhere((c) => c.id == conversationId);
     if (index != -1 && conversations[index].unreadCount > 0) {
+      int currentTotal = ChatBubbleWidget.unreadCounter.value;
+      ChatBubbleWidget.unreadCounter.value = currentTotal - conversations[index].unreadCount;
+      
       conversations[index] = conversations[index].copyWith(unreadCount: 0);
       notifyListeners();
     }
