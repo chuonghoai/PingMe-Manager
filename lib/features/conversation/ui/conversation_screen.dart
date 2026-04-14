@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'conversation_controller.dart';
+import '../../../shared/ui/widget/custom_avatar_widget.dart';
 
 class ConversationScreen extends StatefulWidget {
   const ConversationScreen({Key? key}) : super(key: key);
@@ -102,17 +103,15 @@ class _ConversationScreenState extends State<ConversationScreen> {
                             horizontal: 20,
                             vertical: 8,
                           ),
-                          leading: CircleAvatar(
+                          leading: CustomAvatarWidget(
+                            avatarUrl: conv.displayAvatarUrl,
+                            fullname: conv.displayFullName,
                             radius: 26,
-                            backgroundImage: NetworkImage(
-                              conv.avatarUrl ??
-                                  'https://ui-avatars.com/api/?name=${conv.fullname ?? 'U'}',
-                            ),
                           ),
                           title: Text(
-                            conv.fullname ?? 'Người dùng',
+                            conv.displayFullName ?? 'Người dùng',
                             style: TextStyle(
-                              fontWeight: conv.unreadCount > 0
+                              fontWeight: conv.myUnreadCount > 0
                                   ? FontWeight.bold
                                   : FontWeight.w600,
                               fontSize: 16,
@@ -123,10 +122,10 @@ class _ConversationScreenState extends State<ConversationScreen> {
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(
-                              color: conv.unreadCount > 0
+                              color: conv.myUnreadCount > 0
                                   ? Colors.black87
                                   : Colors.grey.shade600,
-                              fontWeight: conv.unreadCount > 0
+                              fontWeight: conv.myUnreadCount > 0
                                   ? FontWeight.w600
                                   : FontWeight.normal,
                             ),
@@ -139,14 +138,14 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                 _formatTime(conv.lastMessageAt),
                                 style: TextStyle(
                                   fontSize: 12,
-                                  color: conv.unreadCount > 0
+                                  color: conv.myUnreadCount > 0
                                       ? const Color(0xFFF5A623)
                                       : Colors.grey,
                                 ),
                               ),
                               const SizedBox(height: 6),
                               // Unread count badge
-                              if (conv.unreadCount > 0)
+                              if (conv.myUnreadCount > 0)
                                 Container(
                                   padding: const EdgeInsets.all(6),
                                   decoration: const BoxDecoration(
@@ -154,9 +153,9 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                     shape: BoxShape.circle,
                                   ),
                                   child: Text(
-                                    conv.unreadCount > 99
+                                    conv.myUnreadCount > 99
                                         ? '99+'
-                                        : conv.unreadCount.toString(),
+                                        : conv.myUnreadCount.toString(),
                                     style: const TextStyle(
                                       color: Colors.white,
                                       fontSize: 10,

@@ -1,3 +1,5 @@
+// ignore_for_file: avoid_print
+
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import '../services/conversation_service.dart';
@@ -23,6 +25,7 @@ class ConversationController extends ChangeNotifier {
 
     if (result['success'] == true) {
       conversations = result['data'];
+      print('conversations: ${conversations.map((e) => e.toJson()).toList()}');
       ChatBubbleWidget.unreadCounter.value = result['totalUnreadCount'];
       _setupWebsocket();
     } else {
@@ -95,11 +98,11 @@ class ConversationController extends ChangeNotifier {
   // Remove badge unread count in UI (local)
   void markAsReadLocally(String conversationId) {
     final index = conversations.indexWhere((c) => c.id == conversationId);
-    if (index != -1 && conversations[index].unreadCount > 0) {
+    if (index != -1 && conversations[index].myUnreadCount > 0) {
       int currentTotal = ChatBubbleWidget.unreadCounter.value;
-      ChatBubbleWidget.unreadCounter.value = currentTotal - conversations[index].unreadCount;
+      ChatBubbleWidget.unreadCounter.value = currentTotal - conversations[index].myUnreadCount;
       
-      conversations[index] = conversations[index].copyWith(unreadCount: 0);
+      conversations[index] = conversations[index].copyWith(myUnreadCount: 0);
       notifyListeners();
     }
   }
