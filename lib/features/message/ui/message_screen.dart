@@ -68,44 +68,75 @@ class _MessageScreenState extends State<MessageScreen> {
         icon: const Icon(Icons.arrow_back),
         onPressed: () => Navigator.pop(context),
       ),
-      title: Row(
-        children: [
-          CircleAvatar(
-            backgroundImage:
-                widget.partnerAvatarUrl != null &&
-                    widget.partnerAvatarUrl!.isNotEmpty
-                ? NetworkImage(widget.partnerAvatarUrl!)
-                : null,
-            child:
-                widget.partnerAvatarUrl == null ||
-                    widget.partnerAvatarUrl!.isEmpty
-                ? const Icon(Icons.person)
-                : null,
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Text(
-              widget.partnerName,
-              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
+      title: ListenableBuilder(
+        listenable: _controller,
+        builder: (context, _) {
+          return Row(
+            children: [
+              Stack(
+                children: [
+                  CircleAvatar(
+                    backgroundColor: Colors.grey[200],
+                    backgroundImage:
+                        widget.partnerAvatarUrl != null &&
+                            widget.partnerAvatarUrl!.isNotEmpty
+                        ? NetworkImage(widget.partnerAvatarUrl!)
+                        : null,
+                    onBackgroundImageError: (e, s) {},
+                    child:
+                        widget.partnerAvatarUrl == null ||
+                            widget.partnerAvatarUrl!.isEmpty
+                        ? const Icon(Icons.person, color: Colors.grey)
+                        : null,
+                  ),
+                  if (_controller.isPartnerOnline)
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 12,
+                        height: 12,
+                        decoration: BoxDecoration(
+                          color: Colors.green,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: Colors.white, width: 2),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      widget.partnerName,
+                      style: const TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    Text(
+                      _controller.isPartnerOnline
+                          ? 'Đang hoạt động'
+                          : 'Ngoại tuyến',
+                      style: TextStyle(
+                        fontSize: 12,
+                        color: _controller.isPartnerOnline
+                            ? Colors.green
+                            : Colors.grey,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
-      actions: [
-        IconButton(
-          icon: const Icon(Icons.call),
-          onPressed: () {}, // TODO: Audio Call
-        ),
-        IconButton(
-          icon: const Icon(Icons.videocam),
-          onPressed: () {}, // TODO: Video Call
-        ),
-        IconButton(
-          icon: const Icon(Icons.more_horiz),
-          onPressed: () {}, // TODO: More options
-        ),
-      ],
     );
   }
 
@@ -118,41 +149,82 @@ class _MessageScreenState extends State<MessageScreen> {
           return const Center(child: CircularProgressIndicator());
         }
 
-        if (_controller.errorMessage != null && _controller.messages.isEmpty) {
-          return Center(child: Text(_controller.errorMessage!));
-        }
+        final lastMyMessageIndex = _controller.messages.indexWhere(
+          (m) => m.senderId == widget.currentUserId,
+        );
 
-        return ListView.builder(
-          reverse: true,
-          padding: const EdgeInsets.all(16),
-          itemCount: _controller.messages.length,
-          itemBuilder: (context, index) {
-            final message = _controller.messages[index];
-            final isMe = message.senderId == widget.currentUserId;
-
-            return _buildMessageBubble(message, isMe);
-          },
+        return Column(
+          children: [
+            Expanded(
+              child: ListView.builder(
+                reverse: true,
+                padding: const EdgeInsets.all(16),
+                itemCount: _controller.messages.length,
+                itemBuilder: (context, index) {
+                  final message = _controller.messages[index];
+                  final isMe = message.senderId == widget.currentUserId;
+                  final isLastMyMessage = isMe && index == lastMyMessageIndex;
+                  return _buildMessageBubble(message, isMe, isLastMyMessage);
+                },
+              ),
+            ),
+            if (_controller.isPartnerTyping)
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 8,
+                ),
+                child: Row(
+                  children: [
+                    Text(
+                      '${widget.partnerName} đang nhập...',
+                      style: const TextStyle(
+                        fontStyle: FontStyle.italic,
+                        color: Colors.grey,
+                        fontSize: 13,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+          ],
         );
       },
     );
   }
 
   /// Message item
-  Widget _buildMessageBubble(MessageItem message, bool isMe) {
+  Widget _buildMessageBubble(MessageItem message, bool isMe, bool isLastMyMessage) {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 8),
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-        decoration: BoxDecoration(
-          color: isMe ? Colors.blueAccent : Colors.grey[300],
-          borderRadius: BorderRadius.circular(20),
-        ),
-        child: Text(
-          message.content ??
-              (message.type == 'IMAGE' ? '[Hình ảnh]' : '[Tin nhắn]'),
-          style: TextStyle(color: isMe ? Colors.white : Colors.black87),
-        ),
+      child: Column(
+        crossAxisAlignment: isMe
+            ? CrossAxisAlignment.end
+            : CrossAxisAlignment.start,
+        children: [
+          Container(
+            margin: const EdgeInsets.only(bottom: 4),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+            decoration: BoxDecoration(
+              color: isMe ? Colors.blueAccent : Colors.grey[300],
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Text(
+              message.content ??
+                  (message.type == 'IMAGE' ? '[Hình ảnh]' : '[Tin nhắn]'),
+              style: TextStyle(color: isMe ? Colors.white : Colors.black87),
+            ),
+          ),
+          if (isMe && isLastMyMessage)
+            Text(
+              message.isRead ? 'Đã xem' : 'Đã gửi',
+              style: TextStyle(
+                fontSize: 11,
+                color: message.isRead ? Colors.blue : Colors.grey,
+              ),
+            ),
+          const SizedBox(height: 12),
+        ],
       ),
     );
   }

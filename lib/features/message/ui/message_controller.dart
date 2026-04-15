@@ -1,7 +1,10 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/message/service/message_socket.dart';
+import 'package:pingme_manager/shared/websocket/websocket_gateway.dart';
 import 'package:uuid/uuid.dart';
 import '../models/message_model.dart';
 import '../service/message_service.dart';
@@ -37,6 +40,7 @@ class MessageController extends ChangeNotifier {
     required this.partnerId,
   }) : _messageService = service ?? MessageService() {
     activeInstance = this;
+    isPartnerOnline = WebsocketGateway().isUserOnline(partnerId);
     _initSocketListeners();
     _setupTypingListener();
     fetchMessages();
@@ -80,6 +84,32 @@ class MessageController extends ChangeNotifier {
           notifyListeners();
         }
       },
+      onMessagesRead: (data) {
+        if (data['conversationId'] == conversationId &&
+            data['userId'] == partnerId) {
+          bool changed = false;
+          for (int i = 0; i < messages.length; i++) {
+            if (messages[i].senderId == currentUserId && !messages[i].isRead) {
+              final m = messages[i];
+              messages[i] = MessageItem(
+                id: m.id,
+                conversationId: m.conversationId,
+                senderId: m.senderId,
+                content: m.content,
+                type: m.type,
+                isRevoked: m.isRevoked,
+                isRead: true,
+                createdAt: m.createdAt,
+                sender: m.sender,
+                replyTo: m.replyTo,
+                media: m.media,
+              );
+              changed = true;
+            }
+          }
+          if (changed) notifyListeners();
+        }
+      },
     );
   }
 
@@ -104,6 +134,14 @@ class MessageController extends ChangeNotifier {
     });
   }
 
+  /// Helper: Update partner online status
+  void updatePartnerOnlineStatus(String userId, bool isOnline) {
+    if (userId == partnerId && isPartnerOnline != isOnline) {
+      isPartnerOnline = isOnline;
+      notifyListeners();
+    }
+  }
+
   /// API: Get messages history
   Future<void> fetchMessages({bool isLoadMore = false}) async {
     if (isLoadMore) {
@@ -122,10 +160,6 @@ class MessageController extends ChangeNotifier {
         page: _currentPage,
       );
 
-      if (!isLoadMore && errorMessage == null) {
-        _messageSocket.markAsRead(conversationId);
-      }
-
       if (isLoadMore) {
         messages.addAll(responseData.messages);
       } else {
@@ -134,6 +168,7 @@ class MessageController extends ChangeNotifier {
 
       hasMore = _currentPage < responseData.meta.totalPages;
       errorMessage = null;
+      _messageSocket.markAsRead(conversationId);
     } catch (e) {
       errorMessage = e.toString();
       if (isLoadMore) _currentPage--;
@@ -179,11 +214,15 @@ class MessageController extends ChangeNotifier {
 
   /// Socket: listen event receive new message
   void handleIncomingMessage(Map<String, dynamic> data) {
-    if (data['conversationId'] == conversationId) {
-      final newMsg = MessageItem.fromJson(data['message']);
-      messages.insert(0, newMsg);
-      _messageSocket.markAsRead(conversationId);
-      notifyListeners();
+    try {
+      if (data['conversationId'] == conversationId) {
+        final newMsg = MessageItem.fromJson(data['message']);
+        messages.insert(0, newMsg);
+        _messageSocket.markAsRead(conversationId);
+        notifyListeners();
+      }
+    } catch (e) {
+      print('Lỗi parse tin nhắn mới: $e');
     }
   }
 

@@ -14,6 +14,8 @@ class WebsocketGateway {
   IO.Socket? socket;
   final String _socketUrl = 'http://10.0.2.2:3000';
 
+  List<String> onlineUsers = [];
+
   // Start connect websocket
   Future<void> connect() async {
     if (socket != null && socket!.connected) return;
@@ -50,6 +52,28 @@ class WebsocketGateway {
   void _registerGlobalListeners() {
     if (socket == null) return;
 
+    socket!.on('online_users_list', (data) {
+      if (data is List) {
+        onlineUsers = List<String>.from(data);
+      }
+    });
+
+    socket!.on('user_online', (data) {
+      final userId = data['userId'];
+      if (userId != null && !onlineUsers.contains(userId)) {
+        onlineUsers.add(userId);
+      }
+      MessageController.activeInstance?.updatePartnerOnlineStatus(userId, true);
+    });
+
+    socket!.on('user_offline', (data) {
+      final userId = data['userId'];
+      if (userId != null) {
+        onlineUsers.remove(userId);
+      }
+      MessageController.activeInstance?.updatePartnerOnlineStatus(userId, false);
+    });
+
     socket!.on('new_message', (data) {
       print('[WebSocket Global] Có tin nhắn mới: $data');
       final messageData = Map<String, dynamic>.from(data);
@@ -77,6 +101,11 @@ class WebsocketGateway {
     socket!.on('call_error', (data) {
       print('[WebSocket Global] Lỗi cuộc gọi: $data');
     });
+  }
+
+  /// Helper: Check user online
+  bool isUserOnline(String userId) {
+    return onlineUsers.contains(userId);
   }
 
   // Disconnect websocket

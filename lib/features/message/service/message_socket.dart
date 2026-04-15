@@ -44,6 +44,7 @@ class MessageSocket {
     required Function(Map<String, dynamic>) onMessageError,
     required Function(Map<String, dynamic>) onUserOnline,
     required Function(Map<String, dynamic>) onUserOffline,
+    required Function(Map<String, dynamic>) onMessagesRead,
   }) {
     final socket = _wsGateway.socket;
     if (socket == null) return;
@@ -69,6 +70,11 @@ class MessageSocket {
       'user_offline',
       (data) => onUserOffline(Map<String, dynamic>.from(data)),
     );
+
+    socket.on(
+      'messages_read',
+      (data) => onMessagesRead(Map<String, dynamic>.from(data)),
+    );
   }
 
   /// Clear listeners
@@ -81,5 +87,6 @@ class MessageSocket {
     socket.off('message_error');
     socket.off('user_online');
     socket.off('user_offline');
+    socket.off('messages_read');
   }
 }
