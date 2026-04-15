@@ -63,11 +63,27 @@ class _MessageScreenState extends State<MessageScreen> {
   /// AppBar
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      surfaceTintColor: Colors.transparent,
       titleSpacing: 0,
       leading: IconButton(
-        icon: const Icon(Icons.arrow_back),
+        icon: const Icon(Icons.arrow_back, color: Color(0xFFF5A623)),
         onPressed: () => Navigator.pop(context),
       ),
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.call, color: Color(0xFFF5A623)),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: const Icon(Icons.videocam, color: Color(0xFFF5A623)),
+          onPressed: () {},
+        ),
+        IconButton(
+          icon: const Icon(Icons.more_horiz, color: Color(0xFFF5A623)),
+          onPressed: () {},
+        ),
+      ],
       title: ListenableBuilder(
         listenable: _controller,
         builder: (context, _) {
@@ -146,7 +162,7 @@ class _MessageScreenState extends State<MessageScreen> {
       listenable: _controller,
       builder: (context, _) {
         if (_controller.isLoading && _controller.messages.isEmpty) {
-          return const Center(child: CircularProgressIndicator());
+          return const Center(child: CircularProgressIndicator(color: Color(0xFFF5A623)));
         }
 
         final lastMyMessageIndex = _controller.messages.indexWhere(
@@ -206,7 +222,7 @@ class _MessageScreenState extends State<MessageScreen> {
             margin: const EdgeInsets.only(bottom: 4),
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
             decoration: BoxDecoration(
-              color: isMe ? Colors.blueAccent : Colors.grey[300],
+              color: isMe ? const Color(0xFFF5A623) : Colors.grey[300],
               borderRadius: BorderRadius.circular(20),
             ),
             child: Text(
@@ -220,7 +236,7 @@ class _MessageScreenState extends State<MessageScreen> {
               message.isRead ? 'Đã xem' : 'Đã gửi',
               style: TextStyle(
                 fontSize: 11,
-                color: message.isRead ? Colors.blue : Colors.grey,
+                color: message.isRead ? const Color(0xFFF5A623) : Colors.grey,
               ),
             ),
           const SizedBox(height: 12),
@@ -241,7 +257,7 @@ class _MessageScreenState extends State<MessageScreen> {
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
+            icon: const Icon(Icons.add_circle_outline, color: Color(0xFFF5A623)),
             onPressed: () {
               // TODO
             },
@@ -270,12 +286,12 @@ class _MessageScreenState extends State<MessageScreen> {
           const SizedBox(width: 4),
           _controller.textController.text.trim().isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.send, color: Colors.blue),
+                  icon: const Icon(Icons.send, color: Color(0xFFF5A623)),
                   onPressed: () =>
                       _controller.sendMessage(widget.currentUserId),
                 )
               : IconButton(
-                  icon: const Icon(Icons.mic, color: Colors.blue),
+                  icon: const Icon(Icons.mic, color: Color(0xFFF5A623)),
                   onPressed: () {
                     // TODO:
                   },
