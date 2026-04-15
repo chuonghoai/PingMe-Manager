@@ -3,18 +3,22 @@
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import '../services/conversation_service.dart';
-import '../services/conversation_socket.dart';
 import '../models/conversation_model.dart';
 
 class ConversationController extends ChangeNotifier {
+  static ConversationController? activeInstance;
+
   final ConversationService _service = ConversationService();
-  final ConversationSocket _socket = ConversationSocket();
 
   List<ConversationModel> conversations = [];
   bool isLoading = true;
   String? errorMessage;
 
   final GlobalKey<AnimatedListState> listKey = GlobalKey<AnimatedListState>();
+
+  ConversationController() {
+    activeInstance = this;
+  }
 
   Future<void> loadData() async {
     isLoading = true;
@@ -27,7 +31,6 @@ class ConversationController extends ChangeNotifier {
       conversations = result['data'];
       print('conversations: ${conversations.map((e) => e.toJson()).toList()}');
       ChatBubbleWidget.unreadCounter.value = result['totalUnreadCount'];
-      _setupWebsocket();
     } else {
       errorMessage = result['error'];
     }
@@ -38,27 +41,23 @@ class ConversationController extends ChangeNotifier {
 
   @override
   void dispose() {
-    _socket.removeWebsocketListeners();
+    activeInstance = null;
     super.dispose();
   }
 
-  // Listen websocket
-  void _setupWebsocket() {
-    _socket.listenToNewMessages((data) {
-      final result = _service.processIncomingMessage(conversations, data);
+  /// Called by WebsocketGateway when a new_message event arrives
+  void handleIncomingMessage(Map<String, dynamic> data) {
+    final result = _service.processIncomingMessage(conversations, data);
 
-      ChatBubbleWidget.unreadCounter.value = result.totalUnreadCount;
+    ChatBubbleWidget.unreadCounter.value = result.totalUnreadCount;
 
-      if (result.updatedConv != null) {
-        if (result.isExisting) {
-          // Conversation existed
-          _animateAndMoveToTop(result.oldIndex, result.updatedConv!);
-        } else {
-          // New conversation
-          _animateAndInsertNew(result.updatedConv!);
-        }
+    if (result.updatedConv != null) {
+      if (result.isExisting) {
+        _animateAndMoveToTop(result.oldIndex, result.updatedConv!);
+      } else {
+        _animateAndInsertNew(result.updatedConv!);
       }
-    });
+    }
   }
 
   // Animate: Remove old item and insert new item at top

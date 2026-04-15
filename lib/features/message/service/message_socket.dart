@@ -1,6 +1,7 @@
 // ignore_for_file: use_null_aware_elements
 
 import '../../../shared/websocket/websocket_gateway.dart';
+import '../../conversation/ui/conversation_controller.dart';
 
 class MessageSocket {
   final WebsocketGateway _wsGateway = WebsocketGateway();
@@ -35,6 +36,7 @@ class MessageSocket {
   /// Emit: mark as read
   void markAsRead(String conversationId) {
     _wsGateway.socket?.emit('mark_read', {'conversationId': conversationId});
+    ConversationController.activeInstance?.markAsReadLocally(conversationId);
   }
 
   /// Listen:

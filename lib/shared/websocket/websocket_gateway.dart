@@ -3,6 +3,7 @@
 import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../core/storage/local_storage.dart';
+import '../../features/conversation/ui/conversation_controller.dart';
 import '../../features/message/ui/message_controller.dart';
 
 class WebsocketGateway {
@@ -83,8 +84,10 @@ class WebsocketGateway {
           activeController.conversationId == messageData['conversationId']) {
         activeController.handleIncomingMessage(messageData);
       } else {
-        ChatBubbleWidget.unreadCounter.value += 1;
-        // TODO
+        ConversationController.activeInstance?.handleIncomingMessage(messageData);
+        if (ConversationController.activeInstance == null) {
+          ChatBubbleWidget.unreadCounter.value += 1;
+        }
       }
     });
 
