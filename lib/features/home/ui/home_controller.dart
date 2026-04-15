@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/home/models/admin.dart';
+import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import '../service/home_service.dart';
 import '../models/users.dart';
 import '../models/stats.dart';
@@ -27,6 +28,8 @@ class HomeController extends ChangeNotifier {
       stats = result['stats'];
       users = result['users'];
       myProfile = result['myProfile'];
+
+      ChatBubbleWidget.unreadCounter.value = stats?.totalUnreadCount ?? 0;
     }
 
     isLoading = false;

@@ -1,5 +1,6 @@
 // ignore_for_file: library_prefixes, avoid_print
 
+import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../core/storage/local_storage.dart';
 
@@ -55,6 +56,7 @@ class WebsocketGateway {
 
     socket!.on('incoming_call', (data) {
       print('[WebSocket Global] Cuộc gọi đến: $data');
+      ChatBubbleWidget.unreadCounter.value += 1;
       // TODO
     });
 
