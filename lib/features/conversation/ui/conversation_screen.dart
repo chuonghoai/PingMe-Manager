@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'conversation_controller.dart';
 import '../../../shared/ui/widget/custom_avatar_widget.dart';
+import '../../../core/storage/local_storage.dart';
 
 class ConversationScreen extends StatefulWidget {
   const ConversationScreen({Key? key}) : super(key: key);
@@ -165,9 +166,24 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                 ),
                             ],
                           ),
-                          onTap: () {
+                          onTap: () async {
                             _controller.markAsReadLocally(conv.id);
-                            // TODO: Open message screen
+                            
+                            final currentUser = await LocalStorage.getUser();
+                            final currentUserId = currentUser?['id'] ?? '';
+
+                            if (!context.mounted) return;
+
+                            Navigator.pushNamed(
+                              context,
+                              '/message',
+                              arguments: {
+                                'conversationId': conv.id,
+                                'partnerName': conv.displayFullName ?? 'Người dùng',
+                                'partnerAvatarUrl': conv.displayAvatarUrl,
+                                'currentUserId': currentUserId,
+                              },
+                            );
                           },
                         ),
                       );

@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/auth/ui/forgotPassword/verify_email_screen.dart';
 import 'package:pingme_manager/features/conversation/ui/conversation_screen.dart';
+import 'package:pingme_manager/features/message/ui/message_screen.dart';
 import 'package:pingme_manager/features/setting/ui/component/logout/logout_screen.dart';
 import 'package:pingme_manager/features/setting/ui/component/profile_setting/profile_setting_screen.dart';
 import 'package:pingme_manager/features/setting/ui/setting_screen.dart';
@@ -110,6 +111,25 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
           return MaterialPageRoute(
             builder: (context) => UserProfileScreen(userId: userId),
+          );
+        }
+
+        // Message screen
+        if (settings.name == '/message') {
+          final Map<String, dynamic> args =
+              settings.arguments as Map<String, dynamic>;
+          final String conversationId = args['conversationId'];
+          final String partnerName = args['partnerName'];
+          final String? partnerAvatarUrl = args['partnerAvatarUrl'];
+          final String currentUserId = args['currentUserId'];
+
+          return MaterialPageRoute(
+            builder: (context) => MessageScreen(
+              conversationId: conversationId,
+              partnerName: partnerName,
+              partnerAvatarUrl: partnerAvatarUrl ?? '',
+              currentUserId: currentUserId,
+            ),
           );
         }
         return null;
