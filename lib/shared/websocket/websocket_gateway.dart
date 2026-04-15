@@ -3,6 +3,7 @@
 import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../core/storage/local_storage.dart';
+import '../../features/message/ui/message_controller.dart';
 
 class WebsocketGateway {
   // Singleton pattern
@@ -51,12 +52,20 @@ class WebsocketGateway {
 
     socket!.on('new_message', (data) {
       print('[WebSocket Global] Có tin nhắn mới: $data');
-      // TODO
+      final messageData = Map<String, dynamic>.from(data);
+      final activeController = MessageController.activeInstance;
+
+      if (activeController != null &&
+          activeController.conversationId == messageData['conversationId']) {
+        activeController.handleIncomingMessage(messageData);
+      } else {
+        ChatBubbleWidget.unreadCounter.value += 1;
+        // TODO
+      }
     });
 
     socket!.on('incoming_call', (data) {
       print('[WebSocket Global] Cuộc gọi đến: $data');
-      ChatBubbleWidget.unreadCounter.value += 1;
       // TODO
     });
 

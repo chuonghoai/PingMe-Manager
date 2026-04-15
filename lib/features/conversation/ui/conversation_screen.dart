@@ -168,9 +168,19 @@ class _ConversationScreenState extends State<ConversationScreen> {
                           ),
                           onTap: () async {
                             _controller.markAsReadLocally(conv.id);
-                            
+
                             final currentUser = await LocalStorage.getUser();
                             final currentUserId = currentUser?['id'] ?? '';
+
+                            String partnerId = '';
+                            if (conv.type == 'ONE_TO_ONE') {
+                              try {
+                                final opponent = conv.participants.firstWhere(
+                                  (p) => p.userId != currentUserId,
+                                );
+                                partnerId = opponent.userId;
+                              } catch (_) {}
+                            }
 
                             if (!context.mounted) return;
 
@@ -179,9 +189,11 @@ class _ConversationScreenState extends State<ConversationScreen> {
                               '/message',
                               arguments: {
                                 'conversationId': conv.id,
-                                'partnerName': conv.displayFullName ?? 'Người dùng',
+                                'partnerName':
+                                    conv.displayFullName ?? 'Người dùng',
                                 'partnerAvatarUrl': conv.displayAvatarUrl,
                                 'currentUserId': currentUserId,
+                                'partnerId': partnerId,
                               },
                             );
                           },

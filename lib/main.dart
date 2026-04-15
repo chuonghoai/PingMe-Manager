@@ -122,6 +122,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
           final String partnerName = args['partnerName'];
           final String? partnerAvatarUrl = args['partnerAvatarUrl'];
           final String currentUserId = args['currentUserId'];
+          final String partnerId = args['partnerId'];
 
           return MaterialPageRoute(
             builder: (context) => MessageScreen(
@@ -129,6 +130,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
               partnerName: partnerName,
               partnerAvatarUrl: partnerAvatarUrl ?? '',
               currentUserId: currentUserId,
+              partnerId: partnerId,
             ),
           );
         }

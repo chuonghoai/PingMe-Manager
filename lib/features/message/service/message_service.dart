@@ -35,6 +35,4 @@ class MessageService {
       throw Exception('Không thể lấy lịch sử tin nhắn: ${e.toString()}');
     }
   }
-
-  // Mark conversation as read
 }

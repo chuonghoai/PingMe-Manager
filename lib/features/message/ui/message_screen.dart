@@ -7,6 +7,7 @@ class MessageScreen extends StatefulWidget {
   final String partnerName;
   final String? partnerAvatarUrl;
   final String currentUserId;
+  final String partnerId;
 
   const MessageScreen({
     super.key,
@@ -14,6 +15,7 @@ class MessageScreen extends StatefulWidget {
     required this.partnerName,
     this.partnerAvatarUrl,
     required this.currentUserId,
+    required this.partnerId,
   });
 
   @override
@@ -26,10 +28,14 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   void initState() {
     super.initState();
-    _controller = MessageController(conversationId: widget.conversationId);
-    
+    _controller = MessageController(
+      conversationId: widget.conversationId,
+      currentUserId: widget.currentUserId,
+      partnerId: widget.partnerId,
+    );
+
     _controller.textController.addListener(() {
-      setState(() {}); 
+      setState(() {});
     });
   }
 
@@ -54,7 +60,7 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  /// 1. AppBar
+  /// AppBar
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
       titleSpacing: 0,
@@ -65,10 +71,14 @@ class _MessageScreenState extends State<MessageScreen> {
       title: Row(
         children: [
           CircleAvatar(
-            backgroundImage: widget.partnerAvatarUrl != null && widget.partnerAvatarUrl!.isNotEmpty
+            backgroundImage:
+                widget.partnerAvatarUrl != null &&
+                    widget.partnerAvatarUrl!.isNotEmpty
                 ? NetworkImage(widget.partnerAvatarUrl!)
                 : null,
-            child: widget.partnerAvatarUrl == null || widget.partnerAvatarUrl!.isEmpty
+            child:
+                widget.partnerAvatarUrl == null ||
+                    widget.partnerAvatarUrl!.isEmpty
                 ? const Icon(Icons.person)
                 : null,
           ),
@@ -99,7 +109,7 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  /// 2. Message List (Lịch sử chat)
+  /// Message List
   Widget _buildMessageList() {
     return ListenableBuilder(
       listenable: _controller,
@@ -113,7 +123,7 @@ class _MessageScreenState extends State<MessageScreen> {
         }
 
         return ListView.builder(
-          reverse: true, // Chat luôn cuộn từ dưới lên
+          reverse: true,
           padding: const EdgeInsets.all(16),
           itemCount: _controller.messages.length,
           itemBuilder: (context, index) {
@@ -127,7 +137,7 @@ class _MessageScreenState extends State<MessageScreen> {
     );
   }
 
-  /// Khung hiển thị 1 tin nhắn
+  /// Message item
   Widget _buildMessageBubble(MessageItem message, bool isMe) {
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
@@ -139,14 +149,15 @@ class _MessageScreenState extends State<MessageScreen> {
           borderRadius: BorderRadius.circular(20),
         ),
         child: Text(
-          message.content ?? (message.type == 'IMAGE' ? '[Hình ảnh]' : '[Tin nhắn]'),
+          message.content ??
+              (message.type == 'IMAGE' ? '[Hình ảnh]' : '[Tin nhắn]'),
           style: TextStyle(color: isMe ? Colors.white : Colors.black87),
         ),
       ),
     );
   }
 
-  /// 3. Thanh nhập liệu (Input Bar)
+  /// Input Bar
   Widget _buildInputBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
@@ -159,7 +170,9 @@ class _MessageScreenState extends State<MessageScreen> {
         children: [
           IconButton(
             icon: const Icon(Icons.add_circle_outline, color: Colors.blue),
-            onPressed: () {}, // TODO: Hiện menu gửi ảnh, file, vị trí...
+            onPressed: () {
+              // TODO
+            },
           ),
           Expanded(
             child: Container(
@@ -170,25 +183,30 @@ class _MessageScreenState extends State<MessageScreen> {
               child: TextField(
                 controller: _controller.textController,
                 minLines: 1,
-                maxLines: 5, // Tự động dãn cao khi gõ nhiều dòng
+                maxLines: 5,
                 decoration: const InputDecoration(
                   hintText: 'Nhập tin nhắn...',
                   border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  contentPadding: EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
                 ),
               ),
             ),
           ),
           const SizedBox(width: 4),
-          // Chỉ hiện nút Send khi có text, ngược lại hiện nút Record
           _controller.textController.text.trim().isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.send, color: Colors.blue),
-                  onPressed: () => _controller.sendMessage(widget.currentUserId),
+                  onPressed: () =>
+                      _controller.sendMessage(widget.currentUserId),
                 )
               : IconButton(
                   icon: const Icon(Icons.mic, color: Colors.blue),
-                  onPressed: () {}, // TODO: Chức năng ghi âm
+                  onPressed: () {
+                    // TODO:
+                  },
                 ),
         ],
       ),
