@@ -12,6 +12,7 @@ import 'core/network/api_client.dart';
 import 'core/network/api_response.dart';
 import 'core/storage/local_storage.dart';
 import 'features/auth/ui/login/login_screen.dart';
+import 'package:pingme_manager/features/call/ui/call_screen.dart';
 import 'features/home/ui/home_screen.dart';
 import 'main.dart';
 import 'shared/websocket/websocket_gateway.dart';
@@ -111,6 +112,22 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
           return MaterialPageRoute(
             builder: (context) => UserProfileScreen(userId: userId),
+          );
+        }
+
+        // Call screen
+        if (settings.name == '/call') {
+          final Map<String, dynamic> args =
+              settings.arguments as Map<String, dynamic>;
+          
+          return MaterialPageRoute(
+            builder: (context) => CallScreen(
+              targetUserId: args['targetUserId'],
+              isVideoCall: args['isVideoCall'],
+              isIncoming: args['isIncoming'],
+              fullname: args['fullname'],
+              avatarUrl: args['avatarUrl'],
+            ),
           );
         }
 

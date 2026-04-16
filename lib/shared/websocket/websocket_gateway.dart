@@ -6,6 +6,7 @@ import '../../core/storage/local_storage.dart';
 import '../../core/network/api_client.dart';
 import '../../features/conversation/ui/conversation_controller.dart';
 import '../../features/message/ui/message_controller.dart';
+import '../../main.dart';
 
 class WebsocketGateway {
   // Singleton pattern
@@ -95,7 +96,18 @@ class WebsocketGateway {
 
     socket!.on('incoming_call', (data) {
       print('[WebSocket Global] Cuộc gọi đến: $data');
-      // TODO
+      if (navigatorKey.currentState != null) {
+        navigatorKey.currentState!.pushNamed(
+          '/call',
+          arguments: {
+            'targetUserId': data['callerId'],
+            'isVideoCall': data['isVideoCall'] ?? false,
+            'isIncoming': true,
+            'fullname': data['fullname'] ?? 'Người dùng',
+            'avatarUrl': data['avatarUrl'] ?? '',
+          },
+        );
+      }
     });
 
     socket!.on('new_notification', (data) {
