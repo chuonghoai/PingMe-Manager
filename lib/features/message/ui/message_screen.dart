@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'message_controller.dart';
 import '../models/message_model.dart';
+import 'widgets/message_media_bubble.dart';
 
 class MessageScreen extends StatefulWidget {
   final String conversationId;
@@ -48,6 +49,7 @@ class _MessageScreenState extends State<MessageScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: _buildAppBar(),
       body: SafeArea(
         child: Column(
@@ -63,7 +65,7 @@ class _MessageScreenState extends State<MessageScreen> {
   /// AppBar
   PreferredSizeWidget _buildAppBar() {
     return AppBar(
-      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      backgroundColor: Colors.white,
       surfaceTintColor: Colors.transparent,
       titleSpacing: 0,
       leading: IconButton(
@@ -162,7 +164,9 @@ class _MessageScreenState extends State<MessageScreen> {
       listenable: _controller,
       builder: (context, _) {
         if (_controller.isLoading && _controller.messages.isEmpty) {
-          return const Center(child: CircularProgressIndicator(color: Color(0xFFF5A623)));
+          return const Center(
+            child: CircularProgressIndicator(color: Color(0xFFF5A623)),
+          );
         }
 
         final lastMyMessageIndex = _controller.messages.indexWhere(
@@ -210,7 +214,30 @@ class _MessageScreenState extends State<MessageScreen> {
   }
 
   /// Message item
-  Widget _buildMessageBubble(MessageItem message, bool isMe, bool isLastMyMessage) {
+  Widget _buildMessageBubble(
+    MessageItem message,
+    bool isMe,
+    bool isLastMyMessage,
+  ) {
+    Widget bubbleContent;
+
+    if (message.type == 'TEXT') {
+      bubbleContent = Container(
+        margin: const EdgeInsets.only(bottom: 4),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+        decoration: BoxDecoration(
+          color: isMe ? const Color(0xFFF5A623) : Colors.grey[300],
+          borderRadius: BorderRadius.circular(20),
+        ),
+        child: Text(
+          message.content ?? '',
+          style: TextStyle(color: isMe ? Colors.white : Colors.black87),
+        ),
+      );
+    } else {
+      bubbleContent = MessageMediaBubble(message: message, isMe: isMe);
+    }
+
     return Align(
       alignment: isMe ? Alignment.centerRight : Alignment.centerLeft,
       child: Column(
@@ -218,19 +245,8 @@ class _MessageScreenState extends State<MessageScreen> {
             ? CrossAxisAlignment.end
             : CrossAxisAlignment.start,
         children: [
-          Container(
-            margin: const EdgeInsets.only(bottom: 4),
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-            decoration: BoxDecoration(
-              color: isMe ? const Color(0xFFF5A623) : Colors.grey[300],
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Text(
-              message.content ??
-                  (message.type == 'IMAGE' ? '[Hình ảnh]' : '[Tin nhắn]'),
-              style: TextStyle(color: isMe ? Colors.white : Colors.black87),
-            ),
-          ),
+          bubbleContent,
+
           if (isMe && isLastMyMessage)
             Text(
               message.isRead ? 'Đã xem' : 'Đã gửi',
@@ -250,14 +266,17 @@ class _MessageScreenState extends State<MessageScreen> {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(
-        color: Theme.of(context).scaffoldBackgroundColor,
+        color: Colors.white,
         border: Border(top: BorderSide(color: Colors.grey.shade300)),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.end,
         children: [
           IconButton(
-            icon: const Icon(Icons.add_circle_outline, color: Color(0xFFF5A623)),
+            icon: const Icon(
+              Icons.add_circle_outline,
+              color: Color(0xFFF5A623),
+            ),
             onPressed: () {
               // TODO
             },
