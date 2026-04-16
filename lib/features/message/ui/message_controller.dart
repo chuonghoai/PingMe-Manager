@@ -8,11 +8,17 @@ import 'package:pingme_manager/shared/websocket/websocket_gateway.dart';
 import 'package:uuid/uuid.dart';
 import '../models/message_model.dart';
 import '../service/message_service.dart';
+import '../../../shared/media/media_service.dart';
+import '../../../shared/media/dto/pending_media_upload.dart';
 
 class MessageController extends ChangeNotifier {
   static MessageController? activeInstance;
   final MessageService _messageService;
+  final MediaService _mediaService = MediaService();
   final MessageSocket _messageSocket = MessageSocket();
+
+  List<PendingMediaUpload> uploadQueue = [];
+  bool isUploadingQueue = false;
 
   final String conversationId;
   final String currentUserId;
@@ -223,6 +229,78 @@ class MessageController extends ChangeNotifier {
       }
     } catch (e) {
       print('Lỗi parse tin nhắn mới: $e');
+    }
+  }
+
+  /// Queue background media files
+  Future<void> enqueueMediaFiles(List<String> filePaths, String type) async {
+    for (var path in filePaths) {
+      final tempId = const Uuid().v4();
+
+      final tempMessage = MessageItem(
+        id: tempId,
+        conversationId: conversationId,
+        senderId: currentUserId,
+        content: path,
+        type: type,
+        isRevoked: false,
+        isRead: false,
+        createdAt: DateTime.now(),
+        sender: Sender(id: currentUserId, fullname: 'Tôi'),
+      );
+      messages.insert(0, tempMessage);
+
+      uploadQueue.add(
+        PendingMediaUpload(id: tempId, filePath: path, type: type),
+      );
+    }
+
+    notifyListeners();
+    _processUploadQueue();
+  }
+
+  /// Helper: Upload media file
+  Future<void> _processUploadQueue() async {
+    if (isUploadingQueue) return;
+    isUploadingQueue = true;
+
+    try {
+      while (uploadQueue.isNotEmpty) {
+        final current = uploadQueue.first;
+
+        try {
+          final signature = await _mediaService.getSignature();
+          final cloudinaryRes = await _mediaService.uploadToCloudinary(
+            fileUri: current.filePath,
+            signatureData: signature,
+            resourceType: current.type.toLowerCase() == 'video'
+                ? 'video'
+                : 'image',
+          );
+
+          final dbRes = await _mediaService.createMediaRecord(cloudinaryRes);
+          final mediaId = dbRes['id'];
+
+          _messageSocket.sendMessage(
+            conversationId: conversationId,
+            content: '',
+            type: current.type,
+            temporaryId: current.id,
+            mediaId: mediaId,
+          );
+
+          uploadQueue.removeAt(0);
+        } catch (e) {
+          print('Lỗi upload file ${current.filePath}: $e');
+
+          uploadQueue.removeAt(0);
+          messages.removeWhere((m) => m.id == current.id);
+          errorMessage = 'Lỗi upload media!';
+          notifyListeners();
+        }
+      }
+    } finally {
+      isUploadingQueue = false;
     }
   }
 

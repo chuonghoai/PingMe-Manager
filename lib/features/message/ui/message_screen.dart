@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 import 'message_controller.dart';
 import '../models/message_model.dart';
 import 'widgets/message_media_bubble.dart';
@@ -25,6 +26,7 @@ class MessageScreen extends StatefulWidget {
 
 class _MessageScreenState extends State<MessageScreen> {
   late MessageController _controller;
+  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {
@@ -278,7 +280,7 @@ class _MessageScreenState extends State<MessageScreen> {
               color: Color(0xFFF5A623),
             ),
             onPressed: () {
-              // TODO
+              _showMediaPickerBottomSheet();
             },
           ),
           Expanded(
@@ -317,6 +319,73 @@ class _MessageScreenState extends State<MessageScreen> {
                 ),
         ],
       ),
+    );
+  }
+
+  /// Show bottom sheet select media from gallery
+  void _showMediaPickerBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return SafeArea(
+          child: Wrap(
+            children: [
+              ListTile(
+                leading: const Icon(
+                  Icons.photo_library,
+                  color: Color(0xFFF5A623),
+                ),
+                title: const Text('Chọn ảnh/video từ thư viện'),
+                onTap: () async {
+                  Navigator.pop(context);
+
+                  final List<XFile> medias = await _picker.pickMultipleMedia();
+
+                  if (medias.isNotEmpty) {
+                    List<String> imagePaths = [];
+                    List<String> videoPaths = [];
+
+                    for (var media in medias) {
+                      final path = media.path.toLowerCase();
+                      if (path.endsWith('.mp4') ||
+                          path.endsWith('.mov') ||
+                          path.endsWith('.avi') ||
+                          path.endsWith('.mkv')) {
+                        videoPaths.add(media.path);
+                      } else {
+                        imagePaths.add(media.path);
+                      }
+                    }
+
+                    if (imagePaths.isNotEmpty) {
+                      _controller.enqueueMediaFiles(imagePaths, 'IMAGE');
+                    }
+                    if (videoPaths.isNotEmpty) {
+                      _controller.enqueueMediaFiles(videoPaths, 'VIDEO');
+                    }
+                  }
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.camera_alt, color: Color(0xFFF5A623)),
+                title: const Text('Chụp ảnh mới'),
+                onTap: () async {
+                  Navigator.pop(context);
+                  final XFile? photo = await _picker.pickImage(
+                    source: ImageSource.camera,
+                  );
+                  if (photo != null) {
+                    _controller.enqueueMediaFiles([photo.path], 'IMAGE');
+                  }
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

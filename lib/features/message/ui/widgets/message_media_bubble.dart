@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:io';
 import '../../models/message_model.dart';
 import 'video_bubble.dart';
 import 'audio_bubble.dart';
@@ -15,11 +16,13 @@ class MessageMediaBubble extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final mediaUrl = message.media?.secureUrl ?? '';
+    final mediaUrl = message.media?.secureUrl ?? message.content ?? '';
 
     if (mediaUrl.isEmpty) {
       return const SizedBox.shrink();
     }
+
+    final isLocal = !mediaUrl.startsWith('http');
 
     if (message.type == 'IMAGE') {
       return Container(
@@ -30,22 +33,41 @@ class MessageMediaBubble extends StatelessWidget {
         ),
         child: ClipRRect(
           borderRadius: BorderRadius.circular(16),
-          child: Image.network(
-            mediaUrl,
-            fit: BoxFit.cover,
-            loadingBuilder: (context, child, loadingProgress) {
-              if (loadingProgress == null) return child;
-              return _buildPlaceholder(
-                200,
-                200,
-                const CircularProgressIndicator(color: Color(0xFFF5A623)),
-              );
-            },
-            errorBuilder: (context, error, stackTrace) => _buildPlaceholder(
-              200,
-              200,
-              const Icon(Icons.broken_image, color: Colors.grey, size: 40),
-            ),
+          child: Stack(
+            fit: StackFit.passthrough,
+            children: [
+              isLocal 
+                ? Image.file(
+                    File(mediaUrl),
+                    fit: BoxFit.cover,
+                  )
+                : Image.network(
+                    mediaUrl,
+                    fit: BoxFit.cover,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return _buildPlaceholder(
+                        200,
+                        200,
+                        const CircularProgressIndicator(color: Color(0xFFF5A623)),
+                      );
+                    },
+                    errorBuilder: (context, error, stackTrace) => _buildPlaceholder(
+                      200,
+                      200,
+                      const Icon(Icons.broken_image, color: Colors.grey, size: 40),
+                    ),
+                  ),
+              if (isLocal)
+                Positioned.fill(
+                  child: Container(
+                    color: Colors.black45,
+                    child: const Center(
+                      child: CircularProgressIndicator(color: Color(0xFFF5A623)),
+                    ),
+                  ),
+                ),
+            ],
           ),
         ),
       );

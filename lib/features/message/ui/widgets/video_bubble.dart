@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 
@@ -16,8 +17,12 @@ class _VideoBubbleState extends State<VideoBubble> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl))
-      ..initialize()
+    final isLocal = !widget.videoUrl.startsWith('http');
+    _controller = isLocal 
+      ? VideoPlayerController.file(File(widget.videoUrl)) 
+      : VideoPlayerController.networkUrl(Uri.parse(widget.videoUrl));
+      
+    _controller.initialize()
           .then((_) {
             if (mounted) {
               setState(() {
@@ -52,6 +57,8 @@ class _VideoBubbleState extends State<VideoBubble> {
         ),
       );
     }
+
+    final isLocal = !widget.videoUrl.startsWith('http');
 
     return Container(
       margin: const EdgeInsets.only(bottom: 4),
@@ -88,6 +95,15 @@ class _VideoBubbleState extends State<VideoBubble> {
                 ),
               ),
             ),
+            if (isLocal)
+              Positioned.fill(
+                child: Container(
+                  color: Colors.black45,
+                  child: const Center(
+                    child: CircularProgressIndicator(color: Color(0xFFF5A623)),
+                  ),
+                ),
+              ),
           ],
         ),
       ),
