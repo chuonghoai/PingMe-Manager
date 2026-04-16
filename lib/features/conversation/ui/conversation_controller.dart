@@ -94,13 +94,35 @@ class ConversationController extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Update last message dynamically locally
+  void updateLastMessageLocally(
+    String conversationId,
+    String type,
+    String? content,
+  ) {
+    final index = conversations.indexWhere((c) => c.id == conversationId);
+    if (index != -1) {
+      String snippet = content ?? '';
+      if (type == 'IMAGE') snippet = '[Hình ảnh]';
+      if (type == 'VIDEO') snippet = '[Video]';
+      if (type == 'AUDIO') snippet = '[Âm thanh]';
+
+      final updatedConv = conversations[index].copyWith(
+        lastMessageSnippet: snippet,
+        lastMessageAt: DateTime.now(),
+      );
+      _animateAndMoveToTop(index, updatedConv);
+    }
+  }
+
   // Remove badge unread count in UI (local)
   void markAsReadLocally(String conversationId) {
     final index = conversations.indexWhere((c) => c.id == conversationId);
     if (index != -1 && conversations[index].myUnreadCount > 0) {
       int currentTotal = ChatBubbleWidget.unreadCounter.value;
-      ChatBubbleWidget.unreadCounter.value = currentTotal - conversations[index].myUnreadCount;
-      
+      ChatBubbleWidget.unreadCounter.value =
+          currentTotal - conversations[index].myUnreadCount;
+
       conversations[index] = conversations[index].copyWith(myUnreadCount: 0);
       notifyListeners();
     }

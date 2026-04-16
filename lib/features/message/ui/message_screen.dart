@@ -27,7 +27,6 @@ class MessageScreen extends StatefulWidget {
 
 class _MessageScreenState extends State<MessageScreen> {
   late MessageController _controller;
-  final ImagePicker _picker = ImagePicker();
 
   @override
   void initState() {

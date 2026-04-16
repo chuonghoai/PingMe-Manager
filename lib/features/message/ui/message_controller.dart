@@ -10,6 +10,7 @@ import '../models/message_model.dart';
 import '../service/message_service.dart';
 import '../../../shared/media/media_service.dart';
 import '../../../shared/media/dto/pending_media_upload.dart';
+import '../../conversation/ui/conversation_controller.dart';
 
 class MessageController extends ChangeNotifier {
   static MessageController? activeInstance;
@@ -203,6 +204,7 @@ class MessageController extends ChangeNotifier {
       sender: Sender(id: currentUserId, fullname: 'Tôi'),
     );
     messages.insert(0, tempMessage);
+    ConversationController.activeInstance?.updateLastMessageLocally(conversationId, 'TEXT', text);
 
     textController.clear();
     _isTypingLocal = false;
@@ -249,6 +251,7 @@ class MessageController extends ChangeNotifier {
         sender: Sender(id: currentUserId, fullname: 'Tôi'),
       );
       messages.insert(0, tempMessage);
+      ConversationController.activeInstance?.updateLastMessageLocally(conversationId, type, path);
 
       uploadQueue.add(
         PendingMediaUpload(id: tempId, filePath: path, type: type),
