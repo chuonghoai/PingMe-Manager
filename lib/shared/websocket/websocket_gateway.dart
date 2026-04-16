@@ -3,6 +3,7 @@
 import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import 'package:socket_io_client/socket_io_client.dart' as IO;
 import '../../core/storage/local_storage.dart';
+import '../../core/network/api_client.dart';
 import '../../features/conversation/ui/conversation_controller.dart';
 import '../../features/message/ui/message_controller.dart';
 
@@ -13,7 +14,6 @@ class WebsocketGateway {
   WebsocketGateway._internal();
 
   IO.Socket? socket;
-  final String _socketUrl = 'http://10.0.2.2:3000';
 
   List<String> onlineUsers = [];
 
@@ -24,8 +24,10 @@ class WebsocketGateway {
     final token = await LocalStorage.getToken();
     if (token == null) return;
 
+    final String socketUrl = ApiClient().client.options.baseUrl;
+
     socket = IO.io(
-      _socketUrl,
+      socketUrl,
       IO.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})
