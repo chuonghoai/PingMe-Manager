@@ -280,7 +280,9 @@ class _HomeScreenState extends State<HomeScreen> {
                     userId: user.id,
                     fullname: user.fullname ?? 'Người dùng ẩn danh',
                     avatarUrl: user.avatarUrl ?? '',
+                    userStatus: user.status,
                     userProfileController: _userProfileController,
+                    homeController: _controller,
                   ),
                 );
               },

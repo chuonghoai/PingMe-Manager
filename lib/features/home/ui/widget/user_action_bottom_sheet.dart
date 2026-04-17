@@ -1,7 +1,8 @@
-// ignore_for_file: use_super_parameters, deprecated_member_use
+// ignore_for_file: use_super_parameters, deprecated_member_use, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/core/storage/local_storage.dart';
+import 'package:pingme_manager/features/home/ui/home_controller.dart';
 import 'package:pingme_manager/features/message/ui/message_screen.dart';
 import 'package:pingme_manager/features/user_profile/ui/user_profile_controller.dart';
 
@@ -9,14 +10,18 @@ class UserActionBottomSheet extends StatelessWidget {
   final String userId;
   final String fullname;
   final String avatarUrl;
+  final String userStatus;
   final UserProfileController userProfileController;
+  final HomeController homeController;
 
   const UserActionBottomSheet({
     Key? key,
     required this.userId,
     required this.fullname,
     required this.avatarUrl,
+    required this.userStatus,
     required this.userProfileController,
+    required this.homeController,
   }) : super(key: key);
 
   @override
@@ -144,16 +149,40 @@ class UserActionBottomSheet extends StatelessWidget {
                 ),
                 child: const Icon(Icons.lock_outline, color: Colors.red),
               ),
-              title: const Text(
-                'Khóa người dùng',
+              title: Text(
+                userStatus == 'LOCKED' ? 'Mở khóa' : 'Khóa',
                 style: TextStyle(
                   color: Colors.red,
                   fontWeight: FontWeight.w600,
                 ),
               ),
-              onTap: () {
-                Navigator.pop(context);
-                // TODO
+              onTap: () async {
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (context) => const Center(
+                    child: CircularProgressIndicator(color: Colors.red),
+                  ),
+                );
+
+                final result = await homeController.toggleLockUser(userId);
+
+                if (context.mounted) Navigator.pop(context);
+                if (context.mounted) Navigator.pop(context);
+                if (context.mounted) {
+                  final isSuccess = result['success'] == true;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(
+                        result['message'] ??
+                            (isSuccess ? 'Thành công' : 'Thất bại'),
+                      ),
+                      backgroundColor: isSuccess ? Colors.green : Colors.red,
+                      behavior: SnackBarBehavior.floating,
+                      duration: const Duration(milliseconds: 1000),
+                    ),
+                  );
+                }
               },
             ),
           ],

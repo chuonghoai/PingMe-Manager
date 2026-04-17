@@ -15,4 +15,12 @@ class UserRepository {
     final response = await _apiClient.client.get('/users/me');
     return response.data as ApiResponse;
   }
+
+  /// Toggle lock user account
+  Future<ApiResponse> toggleLockUser(String userId) async {
+    final response = await _apiClient.client.patch(
+      '/admin/users/$userId/toggle/lock',
+    );
+    return response.data as ApiResponse;
+  }
 }

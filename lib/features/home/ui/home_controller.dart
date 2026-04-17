@@ -35,4 +35,13 @@ class HomeController extends ChangeNotifier {
     isLoading = false;
     notifyListeners();
   }
+
+  /// Toggle lock user account
+  Future<Map<String, dynamic>> toggleLockUser(String userId) async {
+    final result = await _service.toggleLockUser(userId);
+    if (result['success'] == true) {
+      loadData();
+    }
+    return result;
+  }
 }

@@ -52,4 +52,19 @@ class HomeService {
       return {'error': "Lỗi hệ thống: $e"};
     }
   }
+
+  /// Toggle lock user account
+  Future<Map<String, dynamic>> toggleLockUser(String userId) async {
+    try {
+      final res = await _userRepo.toggleLockUser(userId);
+      return {'success': res.success, 'message': res.message};
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'message': e.error?.toString() ?? "Lỗi kết nối máy chủ.",
+      };
+    } catch (e) {
+      return {'success': false, 'message': "Lỗi hệ thống: $e"};
+    }
+  }
 }
