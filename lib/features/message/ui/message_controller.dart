@@ -227,6 +227,7 @@ class MessageController extends ChangeNotifier {
         final newMsg = MessageItem.fromJson(data['message']);
         messages.insert(0, newMsg);
         _messageSocket.markAsRead(conversationId);
+        ConversationController.activeInstance?.updateLastMessageLocally(conversationId, 'TEXT', newMsg.content);
         notifyListeners();
       }
     } catch (e) {
