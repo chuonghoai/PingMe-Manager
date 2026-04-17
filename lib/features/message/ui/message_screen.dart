@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/features/call/ui/call_screen.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'message_controller.dart';
 import '../models/message_model.dart';
@@ -76,11 +77,37 @@ class _MessageScreenState extends State<MessageScreen> {
       actions: [
         IconButton(
           icon: const Icon(Icons.call, color: Color(0xFFF5A623)),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CallScreen(
+                  targetUserId: widget.partnerId,
+                  isVideoCall: false,
+                  isIncoming: false,
+                  fullname: widget.partnerName,
+                  avatarUrl: widget.partnerAvatarUrl ?? '',
+                ),
+              ),
+            );
+          },
         ),
         IconButton(
           icon: const Icon(Icons.videocam, color: Color(0xFFF5A623)),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => CallScreen(
+                  targetUserId: widget.partnerId,
+                  isVideoCall: true,
+                  isIncoming: false,
+                  fullname: widget.partnerName,
+                  avatarUrl: widget.partnerAvatarUrl ?? '',
+                ),
+              ),
+            );
+          },
         ),
         IconButton(
           icon: const Icon(Icons.more_horiz, color: Color(0xFFF5A623)),

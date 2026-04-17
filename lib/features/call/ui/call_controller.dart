@@ -1,3 +1,5 @@
+// ignore_for_file: prefer_final_fields, avoid_print
+
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
@@ -12,7 +14,7 @@ class CallController extends ChangeNotifier {
   final String fullname;
   final String avatarUrl;
 
-  String status; // 'connecting', 'ringing', 'accepted', 'rejected', 'ended'
+  String status;
   int callDuration = 0;
   Timer? _durationTimer;
 
