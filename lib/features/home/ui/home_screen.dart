@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
+import 'package:pingme_manager/features/user_profile/ui/user_profile_controller.dart';
 import 'home_controller.dart';
 import 'widget/user_action_bottom_sheet.dart';
 
@@ -14,6 +15,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   final HomeController _controller = HomeController();
+  final UserProfileController _userProfileController = UserProfileController();
   final Color amberGold = const Color(0xFFF5A623);
 
   @override
@@ -223,11 +225,7 @@ class _HomeScreenState extends State<HomeScreen> {
               vertical: 8,
             ),
             onTap: () {
-              Navigator.pushNamed(
-                context, 
-                '/user-profile', 
-                arguments: user.id,
-              );
+              Navigator.pushNamed(context, '/user-profile', arguments: user.id);
             },
             leading: CircleAvatar(
               radius: 22,
@@ -278,7 +276,12 @@ class _HomeScreenState extends State<HomeScreen> {
                   context: context,
                   backgroundColor: Colors.transparent,
                   isScrollControlled: true,
-                  builder: (context) => UserActionBottomSheet(userId: user.id),
+                  builder: (context) => UserActionBottomSheet(
+                    userId: user.id,
+                    fullname: user.fullname ?? 'Người dùng ẩn danh',
+                    avatarUrl: user.avatarUrl ?? '',
+                    userProfileController: _userProfileController,
+                  ),
                 );
               },
             ),
