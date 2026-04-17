@@ -20,6 +20,20 @@ class ParticipantModel {
     );
   }
 
+  ParticipantModel copyWith({
+    String? userId,
+    String? fullname,
+    String? avatarUrl,
+    bool? isOnline,
+  }) {
+    return ParticipantModel(
+      userId: userId ?? this.userId,
+      fullname: fullname ?? this.fullname,
+      avatarUrl: avatarUrl ?? this.avatarUrl,
+      isOnline: isOnline ?? this.isOnline,
+    );
+  }
+
   Map<String, dynamic> toJson() {
     return {
       'userId': userId,

@@ -1,10 +1,9 @@
-// ignore_for_file: use_super_parameters
+// ignore_for_file: use_super_parameters, dead_code
 
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'conversation_controller.dart';
 import '../../../shared/ui/widget/custom_avatar_widget.dart';
-import '../../../core/storage/local_storage.dart';
 
 class ConversationScreen extends StatefulWidget {
   const ConversationScreen({Key? key}) : super(key: key);
@@ -97,6 +96,20 @@ class _ConversationScreenState extends State<ConversationScreen> {
                     itemBuilder: (context, index, animation) {
                       final conv = _controller.conversations[index];
 
+                      // Tìm đối phương để check trạng thái online
+                      bool isOpponentOnline = false;
+                      String partnerId = '';
+
+                      if (conv.type == 'ONE_TO_ONE') {
+                        try {
+                          final opponent = conv.participants.firstWhere(
+                            (p) => p.userId != _controller.currentUserId,
+                          );
+                          partnerId = opponent.userId;
+                          isOpponentOnline = opponent.isOnline;
+                        } catch (_) {}
+                      }
+
                       return SizeTransition(
                         sizeFactor: animation,
                         child: ListTile(
@@ -104,10 +117,32 @@ class _ConversationScreenState extends State<ConversationScreen> {
                             horizontal: 20,
                             vertical: 8,
                           ),
-                          leading: CustomAvatarWidget(
-                            avatarUrl: conv.displayAvatarUrl,
-                            fullname: conv.displayFullName,
-                            radius: 26,
+                          leading: Stack(
+                            clipBehavior: Clip.none,
+                            children: [
+                              CustomAvatarWidget(
+                                avatarUrl: conv.displayAvatarUrl,
+                                fullname: conv.displayFullName,
+                                radius: 26,
+                              ),
+                              if (isOpponentOnline)
+                                Positioned(
+                                  bottom: 0,
+                                  right: 0,
+                                  child: Container(
+                                    width: 14,
+                                    height: 14,
+                                    decoration: BoxDecoration(
+                                      color: Colors.green,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: Colors.white,
+                                        width: 2.5,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                            ],
                           ),
                           title: Text(
                             conv.displayFullName ?? 'Người dùng',
@@ -166,21 +201,8 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                 ),
                             ],
                           ),
-                          onTap: () async {
+                          onTap: () {
                             _controller.markAsReadLocally(conv.id);
-
-                            final currentUser = await LocalStorage.getUser();
-                            final currentUserId = currentUser?['id'] ?? '';
-
-                            String partnerId = '';
-                            if (conv.type == 'ONE_TO_ONE') {
-                              try {
-                                final opponent = conv.participants.firstWhere(
-                                  (p) => p.userId != currentUserId,
-                                );
-                                partnerId = opponent.userId;
-                              } catch (_) {}
-                            }
 
                             if (!context.mounted) return;
 
@@ -192,7 +214,7 @@ class _ConversationScreenState extends State<ConversationScreen> {
                                 'partnerName':
                                     conv.displayFullName ?? 'Người dùng',
                                 'partnerAvatarUrl': conv.displayAvatarUrl,
-                                'currentUserId': currentUserId,
+                                'currentUserId': _controller.currentUserId,
                                 'partnerId': partnerId,
                               },
                             );

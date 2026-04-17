@@ -1,6 +1,8 @@
 // ignore_for_file: avoid_print
 
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/core/storage/local_storage.dart';
+import 'package:pingme_manager/features/conversation/services/conversation_socket.dart';
 import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
 import '../services/conversation_service.dart';
 import '../models/conversation_model.dart';
@@ -9,21 +11,27 @@ class ConversationController extends ChangeNotifier {
   static ConversationController? activeInstance;
 
   final ConversationService _service = ConversationService();
+  final ConversationSocket _socket = ConversationSocket();
 
   List<ConversationModel> conversations = [];
   bool isLoading = true;
   String? errorMessage;
+  String currentUserId = '';
 
   final GlobalKey<AnimatedListState> listKey = GlobalKey<AnimatedListState>();
 
   ConversationController() {
     activeInstance = this;
+    _socket.initSocketListeners(this);
   }
 
   Future<void> loadData() async {
     isLoading = true;
     errorMessage = null;
     notifyListeners();
+
+    final currentUser = await LocalStorage.getUser();
+    currentUserId = currentUser?['id'] ?? '';
 
     final result = await _service.fetchConversations();
 
@@ -41,8 +49,32 @@ class ConversationController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _socket.removeWebsocketListeners();
     activeInstance = null;
     super.dispose();
+  }
+
+  /// Socket: update online status badge
+  void updateUserOnlineStatus(String userId, bool isOnline) {
+    bool isChanged = false;
+
+    for (int i = 0; i < conversations.length; i++) {
+      final pIndex = conversations[i].participants.indexWhere(
+        (p) => p.userId == userId,
+      );
+
+      if (pIndex != -1 &&
+          conversations[i].participants[pIndex].isOnline != isOnline) {
+        conversations[i].participants[pIndex] = conversations[i]
+            .participants[pIndex]
+            .copyWith(isOnline: isOnline);
+        isChanged = true;
+      }
+    }
+
+    if (isChanged) {
+      notifyListeners();
+    }
   }
 
   /// Called by WebsocketGateway when a new_message event arrives
