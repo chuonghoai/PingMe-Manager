@@ -30,4 +30,13 @@ class SettingRepository {
     });
     return response.data as ApiResponse;
   }
+
+  // API change password
+  Future<ApiResponse> changePassword(String oldPassword, String newPassword) async {
+    final response = await _apiClient.client.patch('/admin/change-password', data: {
+      'oldPassword': oldPassword,
+      'newPassword': newPassword,
+    });
+    return response.data as ApiResponse;
+  }
 }

@@ -5,14 +5,9 @@
     "route": "/setting/profile"
   },
   {
-    "icon": "notifications_none",
-    "title": "Cài đặt thông báo",
-    "route": "/setting/notification"
-  },
-  {
     "icon": "lock_outline",
-    "title": "Bảo mật",
-    "route": "/setting/security"
+    "title": "Thay đổi mật khẩu",
+    "route": "/setting/change_password"
   },
   {
     "icon": "logout",

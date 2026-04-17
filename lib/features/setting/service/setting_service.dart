@@ -46,4 +46,33 @@ class SettingService {
       await LocalStorage.clearUser();
     }
   }
+  
+  // Change password
+  Future<Map<String, dynamic>> changePassword(String oldPassword, String newPassword) async {
+    try {
+      // Call API
+      final response = await _settingRepository.changePassword(oldPassword, newPassword);
+      
+      if (response.success) {
+        return {
+          'success': true,
+          'message': 'Đổi mật khẩu thành công',
+          'error': null,
+        };
+      } else {
+        return {
+          'success': false,
+          'message': 'Đổi mật khẩu thất bại',
+          'error': response.message,
+        };
+      }
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'error': e.response?.data['error']['message'] ?? "Lỗi kết nối máy chủ.",
+      };
+    } catch (e) {
+      return {'success': false, 'error': "Lỗi hệ thống: $e"};
+    }
+  }
 }
