@@ -35,6 +35,13 @@ class MessageRepository {
     return response.data as ApiResponse;
   }
 
+  Future<ApiResponse> unblockUser(String conversationId) async {
+    final response = await _apiClient.client.post(
+      '/conversations/$conversationId/unblock',
+    );
+    return response.data as ApiResponse;
+  }
+
   Future<ApiResponse> clearHistory(String conversationId) async {
     final response = await _apiClient.client.post(
       '/conversations/$conversationId/clear-history',

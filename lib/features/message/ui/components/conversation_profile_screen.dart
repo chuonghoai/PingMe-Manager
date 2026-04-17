@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/call/ui/call_screen.dart';
+import 'package:pingme_manager/features/conversation/ui/conversation_controller.dart';
 import 'conversation_profile_controller.dart';
 
 class ConversationProfileScreen extends StatefulWidget {
@@ -80,7 +81,7 @@ class _ConversationProfileScreenState extends State<ConversationProfileScreen> {
     );
   }
 
-  // 1. Phần Header: Avatar và Tên
+  // Header: name and avatar
   Widget _buildHeaderInfo() {
     return Column(
       children: [
@@ -120,7 +121,7 @@ class _ConversationProfileScreenState extends State<ConversationProfileScreen> {
     );
   }
 
-  // 2. Phần 3 nút Action tròn (Gọi thoại, Gọi video, Hồ sơ)
+  // Action button
   Widget _buildActionButtons(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -210,7 +211,7 @@ class _ConversationProfileScreenState extends State<ConversationProfileScreen> {
     );
   }
 
-  // 3. Phần danh sách ảnh/media
+  // List medias
   Widget _buildMediaSection() {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 16),
@@ -303,7 +304,94 @@ class _ConversationProfileScreenState extends State<ConversationProfileScreen> {
     );
   }
 
-  // 4. Phần danh sách các tùy chọn (Chặn, Xóa...)
+  Future<void> _showBlockConfirmationDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận'),
+          content: Text('Bạn có chắc chắn muốn chặn ${widget.partnerName}?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                try {
+                  await _controller.blockUser(widget.conversationId);
+                  ConversationController.activeInstance?.loadData();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Đã chặn người dùng')),
+                    );
+                    Navigator.of(context).pop();
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Lỗi khi chặn người dùng')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Chặn', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Future<void> _showClearHistoryConfirmationDialog(BuildContext context) async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Xác nhận'),
+          content: const Text('Xóa toàn bộ lịch sử trò chuyện phía bạn?'),
+          actions: <Widget>[
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Hủy'),
+            ),
+            TextButton(
+              onPressed: () async {
+                Navigator.of(context).pop();
+                ScaffoldMessenger.of(
+                  context,
+                ).showSnackBar(const SnackBar(content: Text('Đang xóa...')));
+                try {
+                  await _controller.clearHistory(widget.conversationId);
+                  ConversationController.activeInstance?.loadData();
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('Đã xóa lịch sử trò chuyện'),
+                      ),
+                    );
+                    Navigator.of(context).pop();
+                  }
+                } catch (e) {
+                  if (context.mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(content: Text('Lỗi khi xóa lịch sử')),
+                    );
+                  }
+                }
+              },
+              child: const Text('Xóa', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  // Custom action
   Widget _buildOptionsSection() {
     return Column(
       children: [
@@ -326,18 +414,14 @@ class _ConversationProfileScreenState extends State<ConversationProfileScreen> {
           icon: Icons.block,
           title: 'Chặn người dùng',
           isDanger: true,
-          onTap: () {
-            // TODO
-          },
+          onTap: () => _showBlockConfirmationDialog(context),
         ),
         Divider(color: Colors.grey.shade200, height: 1),
         _buildOptionTile(
           icon: Icons.delete_outline,
           title: 'Xóa lịch sử trò chuyện',
           isDanger: true,
-          onTap: () {
-            // TODO
-          },
+          onTap: () => _showClearHistoryConfirmationDialog(context),
         ),
       ],
     );

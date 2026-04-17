@@ -185,6 +185,17 @@ class MessageController extends ChangeNotifier {
     }
   }
 
+  /// API: Unblock user
+  Future<void> unblockUser() async {
+    try {
+      await _messageService.unblockUser(conversationId);
+      notifyListeners();
+    } catch (e) {
+      errorMessage = e.toString();
+      notifyListeners();
+    }
+  }
+
   /// Socket: emit event send message
   Future<void> sendMessage(String senderId) async {
     final text = textController.text.trim();
@@ -204,7 +215,11 @@ class MessageController extends ChangeNotifier {
       sender: Sender(id: currentUserId, fullname: 'Tôi'),
     );
     messages.insert(0, tempMessage);
-    ConversationController.activeInstance?.updateLastMessageLocally(conversationId, 'TEXT', text);
+    ConversationController.activeInstance?.updateLastMessageLocally(
+      conversationId,
+      'TEXT',
+      text,
+    );
 
     textController.clear();
     _isTypingLocal = false;
@@ -227,7 +242,11 @@ class MessageController extends ChangeNotifier {
         final newMsg = MessageItem.fromJson(data['message']);
         messages.insert(0, newMsg);
         _messageSocket.markAsRead(conversationId);
-        ConversationController.activeInstance?.updateLastMessageLocally(conversationId, 'TEXT', newMsg.content);
+        ConversationController.activeInstance?.updateLastMessageLocally(
+          conversationId,
+          'TEXT',
+          newMsg.content,
+        );
         notifyListeners();
       }
     } catch (e) {
@@ -252,7 +271,11 @@ class MessageController extends ChangeNotifier {
         sender: Sender(id: currentUserId, fullname: 'Tôi'),
       );
       messages.insert(0, tempMessage);
-      ConversationController.activeInstance?.updateLastMessageLocally(conversationId, type, path);
+      ConversationController.activeInstance?.updateLastMessageLocally(
+        conversationId,
+        type,
+        path,
+      );
 
       uploadQueue.add(
         PendingMediaUpload(id: tempId, filePath: path, type: type),

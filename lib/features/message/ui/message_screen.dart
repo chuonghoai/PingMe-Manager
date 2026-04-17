@@ -5,6 +5,7 @@ import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'message_controller.dart';
 import '../models/message_model.dart';
 import 'widgets/message_media_bubble.dart';
+import '../../conversation/ui/conversation_controller.dart';
 
 class MessageScreen extends StatefulWidget {
   final String conversationId;
@@ -304,6 +305,89 @@ class _MessageScreenState extends State<MessageScreen> {
 
   /// Input Bar
   Widget _buildInputBar() {
+    final convInstance = ConversationController.activeInstance;
+    if (convInstance != null) {
+      return ListenableBuilder(
+        listenable: convInstance,
+        builder: (context, _) {
+          final convIndex = convInstance.conversations.indexWhere((c) => c.id == widget.conversationId);
+          final currentConversation = convIndex != -1 ? convInstance.conversations[convIndex] : null;
+
+          final isBlockedByMe = currentConversation?.blockedById == widget.currentUserId;
+          final isBlockedByThem = currentConversation?.blockedById != null && currentConversation?.blockedById != widget.currentUserId;
+
+          if (isBlockedByMe) {
+            return _buildBlockedByMeBar();
+          }
+
+          if (isBlockedByThem) {
+            return _buildBlockedByThemBar();
+          }
+
+          return _buildDefaultInputBar();
+        },
+      );
+    }
+    return _buildDefaultInputBar();
+  }
+
+  Widget _buildBlockedByMeBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          const Text('Bạn đã chặn người này.', style: TextStyle(color: Colors.grey)),
+          const SizedBox(height: 12),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFF5A623),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 10),
+            ),
+            onPressed: () async {
+              await _controller.unblockUser();
+              ConversationController.activeInstance?.loadData();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đã bỏ chặn người dùng')),
+                );
+              }
+            },
+            child: const Text(
+              'Bỏ chặn',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildBlockedByThemBar() {
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: 24, horizontal: 16),
+      width: double.infinity,
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(top: BorderSide(color: Colors.grey.shade300)),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        'Bạn đã bị chặn bởi ${widget.partnerName}',
+        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w500),
+      ),
+    );
+  }
+
+  Widget _buildDefaultInputBar() {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
       decoration: BoxDecoration(

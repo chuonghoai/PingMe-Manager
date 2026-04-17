@@ -86,6 +86,27 @@ class MessageService {
     }
   }
 
+  /// Unblock user
+  Future<bool> unblockUser(String conversationId) async {
+    try {
+      if (conversationId.isEmpty) {
+        throw Exception('Mã cuộc trò chuyện không hợp lệ.');
+      }
+
+      final apiResponse = await _messageRepository.unblockUser(conversationId);
+
+      if (apiResponse.success == true) {
+        return true;
+      } else {
+        throw Exception(
+          apiResponse.message ?? 'Đã xảy ra lỗi khi bỏ chặn người dùng.',
+        );
+      }
+    } catch (e) {
+      throw Exception('Không thể bỏ chặn người dùng: ${e.toString()}');
+    }
+  }
+
   // Clear history
   Future<bool> clearHistory(String conversationId) async {
     try {
