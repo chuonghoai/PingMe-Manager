@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/call/ui/call_screen.dart';
-import 'package:pingme_manager/features/message/ui/components/conversation_profile_screen.dart';
+import 'package:pingme_manager/features/message/ui/components/conversation_profile/conversation_profile_screen.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'message_controller.dart';
 import '../models/message_model.dart';

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import '../../service/message_service.dart';
-import '../../models/message_model.dart';
+import '../../../service/message_service.dart';
+import '../../../models/message_model.dart';
 
 class ConversationProfileController extends ChangeNotifier {
   final MessageService _messageService = MessageService();
