@@ -4,9 +4,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_webrtc/flutter_webrtc.dart';
 import '../service/call_socket.dart';
+import '../service/call_service.dart';
 
 class CallController extends ChangeNotifier {
   final CallSocket _socket = CallSocket();
+  final CallService _callService = CallService();
 
   final String targetUserId;
   final bool isVideoCall;
@@ -30,6 +32,7 @@ class CallController extends ChangeNotifier {
   final RTCVideoRenderer remoteRenderer = RTCVideoRenderer();
 
   bool _hasEmittedCall = false;
+  bool _isAccepting = false;
   List<RTCIceCandidate> _pendingCandidates = [];
 
   CallController({
@@ -40,14 +43,24 @@ class CallController extends ChangeNotifier {
     required this.avatarUrl,
   })  : status = isIncoming ? 'ringing' : 'connecting',
         isSpeakerOn = isVideoCall {
-    _initWebrtc();
+    _initRenderers().then((_) {
+      if (!isIncoming) {
+        _initWebrtc();
+      }
+    });
     _initSocketListeners();
+
+    if (isIncoming) {
+      _callService.playRingtone();
+    }
+  }
+
+  Future<void> _initRenderers() async {
+    await localRenderer.initialize();
+    await remoteRenderer.initialize();
   }
 
   Future<void> _initWebrtc() async {
-    await localRenderer.initialize();
-    await remoteRenderer.initialize();
-
     try {
       final Map<String, dynamic> mediaConstraints = {
         'audio': {
@@ -105,6 +118,7 @@ class CallController extends ChangeNotifier {
     _socket.listenToCallEvents(
       onCallResponseReceived: (data) async {
         if (data['accepted'] == true) {
+          _callService.stopRingtone();
           status = 'accepted';
           _startTimer();
           notifyListeners();
@@ -120,6 +134,7 @@ class CallController extends ChangeNotifier {
             print('Lỗi tạo Offer: $e');
           }
         } else {
+          _callService.stopRingtone();
           status = 'rejected';
           notifyListeners();
         }
@@ -191,11 +206,13 @@ class CallController extends ChangeNotifier {
         }
       },
       onCallEnded: (data) {
+        _callService.stopRingtone();
         status = 'ended';
         _stopTimer();
         notifyListeners();
       },
       onCallError: (data) {
+        _callService.stopRingtone();
         status = 'ended';
         _stopTimer();
         notifyListeners();
@@ -258,7 +275,15 @@ class CallController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void acceptCall() {
+  void acceptCall() async {
+    if (_isAccepting) return;
+    _isAccepting = true;
+    _callService.stopRingtone();
+    status = 'connecting';
+    notifyListeners();
+
+    await _initWebrtc();
+
     status = 'accepted';
     _startTimer();
     _socket.emitCallResponse(targetUserId: targetUserId, accepted: true);
@@ -266,12 +291,14 @@ class CallController extends ChangeNotifier {
   }
 
   void rejectCall() {
+    _callService.stopRingtone();
     status = 'rejected';
     _socket.emitCallResponse(targetUserId: targetUserId, accepted: false);
     notifyListeners();
   }
 
   void endCall() {
+    _callService.stopRingtone();
     status = 'ended';
     _stopTimer();
     _socket.emitEndCall(targetUserId: targetUserId);
@@ -280,6 +307,7 @@ class CallController extends ChangeNotifier {
 
   @override
   void dispose() {
+    _callService.stopRingtone();
     _socket.removeListeners();
     _stopTimer();
     _localStream?.getTracks().forEach((track) => track.stop());
