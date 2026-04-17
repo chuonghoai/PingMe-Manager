@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/call/ui/call_screen.dart';
 import 'package:pingme_manager/features/conversation/ui/conversation_controller.dart';
+import 'package:pingme_manager/features/message/ui/components/conversation_medias/conversation_medias_screen.dart';
 import 'conversation_profile_controller.dart';
 
 class ConversationProfileScreen extends StatefulWidget {
@@ -228,7 +229,14 @@ class _ConversationProfileScreenState extends State<ConversationProfileScreen> {
                 ),
                 InkWell(
                   onTap: () {
-                    // TODO
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ConversationMediasScreen(
+                          conversationId: widget.conversationId,
+                        ),
+                      ),
+                    );
                   },
                   child: Text(
                     'Tất cả',
