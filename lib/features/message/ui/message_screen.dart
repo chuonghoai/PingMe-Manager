@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/call/ui/call_screen.dart';
+import 'package:pingme_manager/features/message/ui/components/conversation_profile_screen.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'message_controller.dart';
 import '../models/message_model.dart';
@@ -111,7 +112,19 @@ class _MessageScreenState extends State<MessageScreen> {
         ),
         IconButton(
           icon: const Icon(Icons.more_horiz, color: Color(0xFFF5A623)),
-          onPressed: () {},
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ConversationProfileScreen(
+                  conversationId: widget.conversationId,
+                  partnerId: widget.partnerId,
+                  partnerName: widget.partnerName,
+                  partnerAvatarUrl: widget.partnerAvatarUrl,
+                ),
+              ),
+            );
+          },
         ),
       ],
       title: ListenableBuilder(
