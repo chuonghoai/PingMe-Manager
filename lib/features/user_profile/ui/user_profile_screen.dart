@@ -1,6 +1,9 @@
-// ignore_for_file: use_super_parameters, deprecated_member_use, curly_braces_in_flow_control_structures
+// ignore_for_file: use_super_parameters, deprecated_member_use, curly_braces_in_flow_control_structures, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/core/storage/local_storage.dart';
+import 'package:pingme_manager/features/call/ui/call_screen.dart';
+import 'package:pingme_manager/features/message/ui/message_screen.dart';
 import 'package:pingme_manager/features/user_profile/ui/widget/action_icon_widget.dart';
 import 'user_profile_controller.dart';
 import 'package:intl/intl.dart';
@@ -138,7 +141,18 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       icon: Icons.phone,
                       color: Colors.green,
                       onTap: () {
-                        // TODO: Gọi thoại
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CallScreen(
+                              targetUserId: widget.userId,
+                              isVideoCall: false,
+                              isIncoming: false,
+                              fullname: user.fullname ?? 'Người dùng ẩn danh',
+                              avatarUrl: user.avatarUrl ?? '',
+                            ),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(width: 24),
@@ -146,15 +160,72 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       icon: Icons.videocam,
                       color: Colors.blue,
                       onTap: () {
-                        // TODO: Gọi Video
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CallScreen(
+                              targetUserId: widget.userId,
+                              isVideoCall: true,
+                              isIncoming: false,
+                              fullname: user.fullname ?? 'Người dùng ẩn danh',
+                              avatarUrl: user.avatarUrl ?? '',
+                            ),
+                          ),
+                        );
                       },
                     ),
                     const SizedBox(width: 24),
                     ActionIconWidget(
                       icon: Icons.message,
                       color: Color(0xFFF5A623),
-                      onTap: () {
-                        // TODO: Nhắn tin
+                      onTap: () async {
+                        try {
+                          showDialog(
+                            context: context,
+                            barrierDismissible: false,
+                            builder: (context) => const Center(
+                              child: CircularProgressIndicator(
+                                color: Color(0xFFF5A623),
+                              ),
+                            ),
+                          );
+
+                          final conversationId = await _controller
+                              .startConversation(widget.userId);
+
+                          if (context.mounted) Navigator.pop(context);
+
+                          if (conversationId != null && context.mounted) {
+                            final currentUser = await LocalStorage.getUser();
+                            final currentUserId = currentUser?['id'] ?? '';
+
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => MessageScreen(
+                                  conversationId: conversationId,
+                                  partnerName:
+                                      user.fullname ?? 'Người dùng ẩn danh',
+                                  partnerAvatarUrl: user.avatarUrl ?? '',
+                                  currentUserId: currentUserId,
+                                  partnerId: widget.userId,
+                                ),
+                              ),
+                            );
+                          }
+                        } catch (e) {
+                          if (context.mounted) Navigator.pop(context);
+                          if (context.mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  e.toString().replaceAll('Exception: ', ''),
+                                ),
+                                backgroundColor: Colors.red,
+                              ),
+                            );
+                          }
+                        }
                       },
                     ),
                   ],

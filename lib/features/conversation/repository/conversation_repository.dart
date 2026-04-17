@@ -9,4 +9,15 @@ class ConversationRepository {
     final response = await _apiClient.client.get('/conversations');
     return response.data as ApiResponse;
   }
+
+  Future<ApiResponse> createConversation(String targetUserId) async {
+    final response = await _apiClient.client.post(
+      '/conversations',
+      data: {
+        'participantIds': [targetUserId],
+        'type': 'ONE_TO_ONE'
+      },
+    );
+    return response.data as ApiResponse;
+  }
 }

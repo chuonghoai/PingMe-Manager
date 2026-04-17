@@ -140,4 +140,26 @@ class ConversationService {
       );
     }
   }
+
+  Future<Map<String, dynamic>> startConversation(String targetUserId) async {
+    try {
+      final res = await _repository.createConversation(targetUserId);
+
+      if (res.success && res.data != null) {
+        final conversationId = res.data['id'];
+        return {'success': true, 'conversationId': conversationId, 'error': null};
+      }
+      return {
+        'success': false,
+        'error': res.message ?? 'Không thể khởi tạo cuộc trò chuyện',
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'error': e.response?.data['error']['message'] ?? 'Lỗi kết nối mạng.',
+      };
+    } catch (e) {
+      return {'success': false, 'error': 'Lỗi hệ thống: $e'};
+    }
+  }
 }
