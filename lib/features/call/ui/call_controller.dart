@@ -278,7 +278,7 @@ class CallController extends ChangeNotifier {
   void acceptCall() async {
     if (_isAccepting) return;
     _isAccepting = true;
-    _callService.stopRingtone();
+    await _callService.stopRingtone();
     status = 'connecting';
     notifyListeners();
 
