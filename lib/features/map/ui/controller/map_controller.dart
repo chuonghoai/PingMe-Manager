@@ -4,6 +4,7 @@ import 'package:pingme_manager/features/map/models/map_event_model.dart';
 import 'package:pingme_manager/features/map/models/reward_model.dart';
 import 'package:pingme_manager/features/map/services/location_service.dart';
 import 'package:pingme_manager/features/map/ui/controller/map_event_controller.dart';
+import 'package:pingme_manager/features/map/utils/marker_generator.dart';
 
 class MapController extends ChangeNotifier {
   final LocationService _locationService = LocationService();
@@ -17,10 +18,11 @@ class MapController extends ChangeNotifier {
   LatLng? selectedLocation;
 
   Set<Marker> markers = {};
+  final Map<String, BitmapDescriptor> _iconCache = {};
   late MapEventController _eventController;
   late Function(MapEventModel) _onShowDetail;
 
-  /// Khởi tạo và kết nối với EventController
+  /// Init controller
   Future<void> initialize({
     required MapEventController eventController,
     required Function(MapEventModel) onShowDetail,
@@ -39,8 +41,8 @@ class MapController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _handleEventsChanged() {
-    updateMarkers(_eventController.events, _onShowDetail);
+  Future<void> _handleEventsChanged() async {
+    await updateMarkers(_eventController.events, _onShowDetail);
   }
 
   @override
@@ -64,10 +66,12 @@ class MapController extends ChangeNotifier {
   }
 
   /// Convert list events to marker
-  void updateMarkers(
+  Future<void> updateMarkers(
     List<MapEventModel> events,
     Function(MapEventModel) onMarkerTap,
-  ) {
+  ) async {
+    isLoading = true;
+    notifyListeners();
     final newMarkers = <Marker>{};
 
     if (selectedLocation != null) {
@@ -85,11 +89,18 @@ class MapController extends ChangeNotifier {
     for (var event in events) {
       if (event.latitude != null && event.longitude != null) {
         final reward = RewardDefinitions.getReward(event.rewardItem);
+        final emoji = reward?.emoji ?? '🎁';
+
+        if (!_iconCache.containsKey(emoji)) {
+          _iconCache[emoji] = await MarkerGenerator.getIconFromEmoji(emoji);
+        }
+        final customIcon = _iconCache[emoji]!;
 
         newMarkers.add(
           Marker(
             markerId: MarkerId(event.id ?? UniqueKey().toString()),
             position: LatLng(event.latitude!, event.longitude!),
+            icon: customIcon,
             infoWindow: InfoWindow(title: event.name, snippet: reward?.name),
             onTap: () => onMarkerTap(event),
           ),
@@ -98,6 +109,7 @@ class MapController extends ChangeNotifier {
     }
 
     markers = newMarkers;
+    isLoading = false;
     notifyListeners();
   }
 
