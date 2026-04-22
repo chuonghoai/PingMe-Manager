@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/auth/ui/forgotPassword/verify_email_screen.dart';
 import 'package:pingme_manager/features/conversation/ui/conversation_screen.dart';
 import 'package:pingme_manager/features/message/ui/message_screen.dart';
+import 'package:pingme_manager/features/moment/ui/moment_screen.dart';
 import 'package:pingme_manager/features/setting/ui/component/change_password/change_password_screen.dart';
 import 'package:pingme_manager/features/setting/ui/component/logout/logout_screen.dart';
 import 'package:pingme_manager/features/setting/ui/component/profile_setting/profile_setting_screen.dart';
@@ -106,6 +107,9 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
         '/setting/change_password': (context) => const ChangePasswordScreen(),
         '/logout': (context) => const LogoutScreen(),
         '/conversation': (context) => const ConversationScreen(),
+
+        // Manager
+        '/moment_management': (context) => const MomentScreen(),
       },
       onGenerateRoute: (settings) {
         // User profile

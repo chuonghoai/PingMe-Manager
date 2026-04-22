@@ -2,6 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/features/home/ui/widget/chat_bubble_widget.dart';
+import 'package:pingme_manager/features/home/ui/widget/option_feature_slider/option_feature_slider.dart';
 import 'package:pingme_manager/features/user_profile/ui/user_profile_controller.dart';
 import 'home_controller.dart';
 import 'widget/user_action_bottom_sheet.dart';
@@ -348,6 +349,17 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(height: 40),
                     _buildHeader(),
                     _buildStats(),
+                    const Padding(
+                      padding: EdgeInsets.all(16.0),
+                      child: Text(
+                        'Tính năng Quản trị',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                    const OptionFeatureSlider(),
                     const Padding(
                       padding: EdgeInsets.symmetric(
                         horizontal: 20.0,

@@ -69,6 +69,7 @@ flutter:
   uses-material-design: true
   assets:
     - lib/features/setting/ui/setting_feature.json
+    - lib/features/home/ui/widget/option_feature_slider/option_feature.json
     - assets/sounds/
   #   - images/a_dot_burr.jpeg
   #   - images/a_dot_ham.jpeg

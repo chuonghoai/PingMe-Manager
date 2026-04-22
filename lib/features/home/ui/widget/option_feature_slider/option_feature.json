@@ -1,0 +1,12 @@
+[
+  {
+    "name": "Quản lý Moment",
+    "icon": "photo_library",
+    "route": "/moment_management"
+  },
+  {
+    "name": "Quản lý Người dùng",
+    "icon": "people",
+    "route": "/user_management"
+  }
+]
