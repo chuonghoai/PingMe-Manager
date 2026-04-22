@@ -5,11 +5,13 @@ import 'package:flutter/material.dart';
 class MapControlButtons extends StatelessWidget {
   final VoidCallback onCenterMe;
   final VoidCallback onRefresh;
+  final VoidCallback onOpenEvents;
 
   const MapControlButtons({
     Key? key,
     required this.onCenterMe,
     required this.onRefresh,
+    required this.onOpenEvents,
   }) : super(key: key);
 
   @override
@@ -20,6 +22,15 @@ class MapControlButtons extends StatelessWidget {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
+          FloatingActionButton(
+            heroTag: 'map_events',
+            onPressed: onOpenEvents,
+            backgroundColor: Colors.white,
+            shape: const CircleBorder(),
+            child: const Icon(Icons.star_rounded, color: Colors.amber, size: 36),
+          ),
+          const SizedBox(height: 16),
+
           FloatingActionButton(
             heroTag: 'map_refresh',
             onPressed: onRefresh,

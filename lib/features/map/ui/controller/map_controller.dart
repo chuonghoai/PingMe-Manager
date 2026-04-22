@@ -10,6 +10,8 @@ class MapController extends ChangeNotifier {
 
   bool isLoading = true;
   bool isLocationEnabled = false;
+  bool isPickingLocation = false;
+  LatLng? selectedLocation;
 
   Future<void> initMap() async {
     isLoading = true;
@@ -53,5 +55,25 @@ class MapController extends ChangeNotifier {
   /// Button: refresh map
   void refreshMap() {
     initMap();
+  }
+
+  /// Button: start picking location
+  void startPickingLocation() {
+    isPickingLocation = true;
+    selectedLocation = null;
+    notifyListeners();
+  }
+
+  void cancelPickingLocation() {
+    isPickingLocation = false;
+    selectedLocation = null;
+    notifyListeners();
+  }
+
+  void selectLocationOnMap(LatLng location) {
+    if (isPickingLocation) {
+      selectedLocation = location;
+      notifyListeners();
+    }
   }
 }

@@ -2,7 +2,7 @@
 
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
-import 'package:pingme_manager/features/map/ui/map_controller.dart';
+import 'package:pingme_manager/features/map/ui/controller/map_controller.dart';
 
 class GoogleMapView extends StatelessWidget {
   final MapController controller;
@@ -22,6 +22,17 @@ class GoogleMapView extends StatelessWidget {
       zoomControlsEnabled: false,
       mapToolbarEnabled: false,
       compassEnabled: false,
+      onTap: controller.isPickingLocation
+          ? controller.selectLocationOnMap
+          : null,
+      markers: controller.selectedLocation != null
+          ? {
+              Marker(
+                markerId: const MarkerId('selected_location'),
+                position: controller.selectedLocation!,
+              ),
+            }
+          : {},
     );
   }
 }
