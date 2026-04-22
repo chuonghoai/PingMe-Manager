@@ -7,9 +7,13 @@ import 'package:pingme_manager/features/map/models/reward_model.dart';
 
 class MapEventComponents extends StatefulWidget {
   final VoidCallback onCreateNewTriggered;
+  final Function(double lat, double lng) onNavigateToEvent;
 
-  const MapEventComponents({Key? key, required this.onCreateNewTriggered})
-    : super(key: key);
+  const MapEventComponents({
+    Key? key,
+    required this.onCreateNewTriggered,
+    required this.onNavigateToEvent,
+  }) : super(key: key);
 
   @override
   State<MapEventComponents> createState() => _MapEventComponentsState();
@@ -101,9 +105,8 @@ class _MapEventComponentsState extends State<MapEventComponents> {
                           style: const TextStyle(fontWeight: FontWeight.bold),
                         ),
                         subtitle: Text(event.description ?? ''),
-                        trailing: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          crossAxisAlignment: CrossAxisAlignment.end,
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
                             Text(
                               'x${event.rewardQuantity ?? 1}',
@@ -112,13 +115,34 @@ class _MapEventComponentsState extends State<MapEventComponents> {
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
+                            const SizedBox(width: 16),
+
+                            GestureDetector(
+                              onTap: () {
+                                if (event.latitude != null &&
+                                    event.longitude != null) {
+                                  Navigator.pop(context);
+                                  widget.onNavigateToEvent(
+                                    event.latitude!,
+                                    event.longitude!,
+                                  );
+                                }
+                              },
+                              child: const Icon(
+                                Icons.my_location,
+                                color: Colors.blue,
+                                size: 22,
+                              ),
+                            ),
+                            const SizedBox(width: 16),
+
                             GestureDetector(
                               onTap: () =>
                                   _eventController.deleteEvent(event.id!),
                               child: const Icon(
                                 Icons.delete,
                                 color: Colors.red,
-                                size: 20,
+                                size: 22,
                               ),
                             ),
                           ],

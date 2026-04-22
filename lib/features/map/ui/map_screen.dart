@@ -1,6 +1,7 @@
 // ignore_for_file: use_super_parameters
 
 import 'package:flutter/material.dart';
+import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:pingme_manager/features/map/models/map_event_model.dart';
 import 'package:pingme_manager/features/map/ui/components/event_detail_component.dart';
 import 'package:pingme_manager/features/map/ui/components/event_edit_component.dart';
@@ -79,6 +80,9 @@ class _MapScreenState extends State<MapScreen> {
                         onCreateNewTriggered: () {
                           Navigator.pop(context);
                           _mapController.startPickingLocation();
+                        },
+                        onNavigateToEvent: (lat, lng) {
+                          _mapController.animateCameraTo(LatLng(lat, lng));
                         },
                       ),
                     );

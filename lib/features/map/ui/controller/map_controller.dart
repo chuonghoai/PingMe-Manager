@@ -156,4 +156,14 @@ class MapController extends ChangeNotifier {
       notifyListeners();
     }
   }
+
+  Future<void> animateCameraTo(LatLng target, {double zoom = 16.0}) async {
+    if (mapController != null) {
+      await mapController!.animateCamera(
+        CameraUpdate.newCameraPosition(
+          CameraPosition(target: target, zoom: zoom),
+        ),
+      );
+    }
+  }
 }
