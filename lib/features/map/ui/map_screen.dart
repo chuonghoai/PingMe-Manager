@@ -135,6 +135,7 @@ class _MapScreenState extends State<MapScreen> {
                                               EventEditComponent(
                                                 latitude: loc.latitude,
                                                 longitude: loc.longitude,
+                                                eventController: _eventController,
                                               ),
                                         );
                                       },

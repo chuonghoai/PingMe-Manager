@@ -9,11 +9,13 @@ import 'package:pingme_manager/features/map/models/reward_model.dart';
 class EventEditComponent extends StatefulWidget {
   final double latitude;
   final double longitude;
+  final MapEventController eventController;
 
   const EventEditComponent({
     Key? key,
     required this.latitude,
     required this.longitude,
+    required this.eventController,
   }) : super(key: key);
 
   @override
@@ -21,7 +23,6 @@ class EventEditComponent extends StatefulWidget {
 }
 
 class _EventEditComponentState extends State<EventEditComponent> {
-  final MapEventController _eventController = MapEventController();
   final _formKey = GlobalKey<FormState>();
 
   final _nameCtrl = TextEditingController();
@@ -77,7 +78,7 @@ class _EventEditComponentState extends State<EventEditComponent> {
         endTime: _endTime,
       );
 
-      final success = await _eventController.createEvent(request);
+      final success = await widget.eventController.createEvent(request);
       if (success && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Tạo sự kiện thành công!')),
@@ -85,7 +86,7 @@ class _EventEditComponentState extends State<EventEditComponent> {
         Navigator.pop(context); // Đóng pop-up
       } else if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Lỗi: ${_eventController.errorMessage}')),
+          SnackBar(content: Text('Lỗi: ${widget.eventController.errorMessage}')),
         );
       }
     }
@@ -210,9 +211,9 @@ class _EventEditComponentState extends State<EventEditComponent> {
                 const SizedBox(height: 24),
 
                 ListenableBuilder(
-                  listenable: _eventController,
+                  listenable: widget.eventController,
                   builder: (context, child) {
-                    if (_eventController.isCreating)
+                    if (widget.eventController.isCreating)
                       return const Center(child: CircularProgressIndicator());
                     return ElevatedButton(
                       onPressed: _submit,

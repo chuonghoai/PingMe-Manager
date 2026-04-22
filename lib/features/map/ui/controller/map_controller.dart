@@ -146,6 +146,7 @@ class MapController extends ChangeNotifier {
   void cancelPickingLocation() {
     isPickingLocation = false;
     selectedLocation = null;
+    _handleEventsChanged();
     notifyListeners();
   }
 
