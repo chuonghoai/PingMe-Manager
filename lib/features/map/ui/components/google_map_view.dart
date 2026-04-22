@@ -25,14 +25,7 @@ class GoogleMapView extends StatelessWidget {
       onTap: controller.isPickingLocation
           ? controller.selectLocationOnMap
           : null,
-      markers: controller.selectedLocation != null
-          ? {
-              Marker(
-                markerId: const MarkerId('selected_location'),
-                position: controller.selectedLocation!,
-              ),
-            }
-          : {},
+      markers: controller.markers,
     );
   }
 }

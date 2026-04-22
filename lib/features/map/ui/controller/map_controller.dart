@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pingme_manager/features/map/models/map_event_model.dart';
+import 'package:pingme_manager/features/map/models/reward_model.dart';
 import 'package:pingme_manager/features/map/services/location_service.dart';
+import 'package:pingme_manager/features/map/ui/controller/map_event_controller.dart';
 
 class MapController extends ChangeNotifier {
   final LocationService _locationService = LocationService();
@@ -13,25 +16,89 @@ class MapController extends ChangeNotifier {
   bool isPickingLocation = false;
   LatLng? selectedLocation;
 
-  Future<void> initMap() async {
+  Set<Marker> markers = {};
+  late MapEventController _eventController;
+  late Function(MapEventModel) _onShowDetail;
+
+  /// Khởi tạo và kết nối với EventController
+  Future<void> initialize({
+    required MapEventController eventController,
+    required Function(MapEventModel) onShowDetail,
+  }) async {
+    _eventController = eventController;
+    _onShowDetail = onShowDetail;
+
     isLoading = true;
     notifyListeners();
 
-    final LatLng? deviceLocation = await _locationService.getCurrentLocation();
+    await Future.wait([initMap(), _eventController.fetchEvents()]);
+    _eventController.addListener(_handleEventsChanged);
+    _handleEventsChanged();
 
+    isLoading = false;
+    notifyListeners();
+  }
+
+  void _handleEventsChanged() {
+    updateMarkers(_eventController.events, _onShowDetail);
+  }
+
+  @override
+  void dispose() {
+    _eventController.removeListener(_handleEventsChanged);
+    super.dispose();
+  }
+
+  Future<void> initMap() async {
+    final LatLng? deviceLocation = await _locationService.getCurrentLocation();
     if (deviceLocation != null) {
       currentLocation = deviceLocation;
       isLocationEnabled = true;
     } else {
       isLocationEnabled = false;
     }
-
-    isLoading = false;
-    notifyListeners();
   }
 
   void onMapCreated(GoogleMapController controller) {
     mapController = controller;
+  }
+
+  /// Convert list events to marker
+  void updateMarkers(
+    List<MapEventModel> events,
+    Function(MapEventModel) onMarkerTap,
+  ) {
+    final newMarkers = <Marker>{};
+
+    if (selectedLocation != null) {
+      newMarkers.add(
+        Marker(
+          markerId: const MarkerId('selected_location'),
+          position: selectedLocation!,
+          icon: BitmapDescriptor.defaultMarkerWithHue(
+            BitmapDescriptor.hueAzure,
+          ),
+        ),
+      );
+    }
+
+    for (var event in events) {
+      if (event.latitude != null && event.longitude != null) {
+        final reward = RewardDefinitions.getReward(event.rewardItem);
+
+        newMarkers.add(
+          Marker(
+            markerId: MarkerId(event.id ?? UniqueKey().toString()),
+            position: LatLng(event.latitude!, event.longitude!),
+            infoWindow: InfoWindow(title: event.name, snippet: reward?.name),
+            onTap: () => onMarkerTap(event),
+          ),
+        );
+      }
+    }
+
+    markers = newMarkers;
+    notifyListeners();
   }
 
   /// Button: center me
@@ -73,6 +140,7 @@ class MapController extends ChangeNotifier {
   void selectLocationOnMap(LatLng location) {
     if (isPickingLocation) {
       selectedLocation = location;
+      updateMarkers([], (_) {});
       notifyListeners();
     }
   }
