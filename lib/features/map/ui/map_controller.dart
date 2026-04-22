@@ -1,15 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:pingme_manager/features/map/services/location_service.dart';
 
 class MapController extends ChangeNotifier {
+  final LocationService _locationService = LocationService();
   GoogleMapController? mapController;
 
-  final LatLng defaultLocation = const LatLng(10.7769, 106.7009);
+  LatLng currentLocation = const LatLng(10.7769, 106.7009);
 
   bool isLoading = true;
+  bool isLocationEnabled = false;
 
   Future<void> initMap() async {
-    await Future.delayed(const Duration(milliseconds: 500));
+    isLoading = true;
+    notifyListeners();
+
+    final LatLng? deviceLocation = await _locationService.getCurrentLocation();
+
+    if (deviceLocation != null) {
+      currentLocation = deviceLocation;
+      isLocationEnabled = true;
+    } else {
+      isLocationEnabled = false;
+    }
+
     isLoading = false;
     notifyListeners();
   }
@@ -19,24 +33,25 @@ class MapController extends ChangeNotifier {
   }
 
   /// Button: center me
-  void centerMe() {
-    if (mapController != null) {
+  Future<void> centerMe() async {
+    if (mapController == null) return;
+
+    final LatLng? deviceLocation = await _locationService.getCurrentLocation();
+
+    if (deviceLocation != null) {
+      currentLocation = deviceLocation;
       mapController!.animateCamera(
-        CameraUpdate.newLatLngZoom(defaultLocation, 14.0),
+        CameraUpdate.newLatLngZoom(currentLocation, 16.0),
       );
+      isLocationEnabled = true;
+    } else {
+      debugPrint("Không thể lấy vị trí. Vui lòng bật GPS.");
     }
+    notifyListeners();
   }
 
-  /// Nút Refresh
+  /// Button: refresh map
   void refreshMap() {
-    debugPrint("Admin đang refresh dữ liệu bản đồ...");
-
-    isLoading = true;
-    notifyListeners();
-
-    Future.delayed(const Duration(milliseconds: 500), () {
-      isLoading = false;
-      notifyListeners();
-    });
+    initMap();
   }
 }

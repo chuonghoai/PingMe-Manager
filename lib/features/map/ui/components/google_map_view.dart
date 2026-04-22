@@ -14,10 +14,10 @@ class GoogleMapView extends StatelessWidget {
     return GoogleMap(
       onMapCreated: controller.onMapCreated,
       initialCameraPosition: CameraPosition(
-        target: controller.defaultLocation,
+        target: controller.currentLocation,
         zoom: 13,
       ),
-      myLocationEnabled: false, 
+      myLocationEnabled: controller.isLocationEnabled,
       myLocationButtonEnabled: false,
       zoomControlsEnabled: false,
       mapToolbarEnabled: false,
