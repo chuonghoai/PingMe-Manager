@@ -26,4 +26,48 @@ class UserProfileService {
       return {'success': false, 'error': 'Lỗi hệ thống: $e'};
     }
   }
+
+  Future<Map<String, dynamic>> fetchUserInventory(String userId) async {
+    try {
+      final res = await _repository.getUserInventory(userId);
+      if (res.success && res.data != null) {
+        return {'success': true, 'data': res.data, 'error': null};
+      }
+      return {'success': false, 'error': res.message};
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'error': e.response?.data['error']['message'] ?? 'Lỗi kết nối mạng.',
+      };
+    } catch (e) {
+      return {'success': false, 'error': 'Lỗi hệ thống: $e'};
+    }
+  }
+
+  Future<Map<String, dynamic>> updateUserInventory(
+    String userId,
+    String itemType,
+    int amount,
+    String action,
+  ) async {
+    try {
+      final res = await _repository.updateUserInventory(
+        userId,
+        itemType,
+        amount,
+        action,
+      );
+      return {
+        'success': res.success,
+        'error': res.success ? null : res.message,
+      };
+    } on DioException catch (e) {
+      return {
+        'success': false,
+        'error': e.response?.data['error']['message'] ?? 'Lỗi kết nối mạng.',
+      };
+    } catch (e) {
+      return {'success': false, 'error': 'Lỗi hệ thống: $e'};
+    }
+  }
 }

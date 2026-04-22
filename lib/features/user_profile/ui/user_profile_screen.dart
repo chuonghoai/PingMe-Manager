@@ -3,6 +3,7 @@
 import 'package:flutter/material.dart';
 import 'package:pingme_manager/core/storage/local_storage.dart';
 import 'package:pingme_manager/features/call/ui/call_screen.dart';
+import 'package:pingme_manager/features/map/models/reward_model.dart';
 import 'package:pingme_manager/features/message/ui/message_screen.dart';
 import 'package:pingme_manager/features/user_profile/ui/widget/action_icon_widget.dart';
 import 'user_profile_controller.dart';
@@ -31,6 +32,61 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _showAddItemModal() {
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        final availableItems = RewardDefinitions.items.values.where((reward) {
+          final existing = _controller.editedInventory
+              .where((e) => e.itemType == reward.type.name)
+              .toList();
+          return existing.isEmpty || existing.first.quantity == 0;
+        }).toList();
+
+        if (availableItems.isEmpty) {
+          return const SizedBox(
+            height: 200,
+            child: Center(
+              child: Text('Người dùng đã sở hữu tất cả các loại vật phẩm.'),
+            ),
+          );
+        }
+
+        return ListView.builder(
+          padding: const EdgeInsets.symmetric(vertical: 20),
+          itemCount: availableItems.length,
+          itemBuilder: (context, index) {
+            final item = availableItems[index];
+            return ListTile(
+              leading: Text(item.emoji, style: const TextStyle(fontSize: 24)),
+              title: Text(
+                item.name,
+                style: const TextStyle(fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                item.description,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              trailing: const Icon(Icons.add_circle, color: Colors.blue),
+              onTap: () {
+                _controller.addNewItemToInventory(
+                  item.type.name,
+                  item.name,
+                  item.emoji,
+                );
+                Navigator.pop(context);
+              },
+            );
+          },
+        );
+      },
+    );
   }
 
   @override
@@ -279,6 +335,195 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     ],
                   ),
                 ),
+
+                // User inventory
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        'Kho đồ',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton.icon(
+                        onPressed: _controller.toggleEditInventory,
+                        icon: Icon(
+                          _controller.isEditingInventory
+                              ? Icons.close
+                              : Icons.edit,
+                          size: 18,
+                        ),
+                        label: Text(
+                          _controller.isEditingInventory ? 'Hủy' : 'Chỉnh sửa',
+                        ),
+                        style: TextButton.styleFrom(
+                          foregroundColor: _controller.isEditingInventory
+                              ? Colors.red
+                              : Colors.blue,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+
+                Container(
+                  margin: const EdgeInsets.symmetric(
+                    horizontal: 20,
+                    vertical: 8,
+                  ),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                  child: ListView.separated(
+                    shrinkWrap: true,
+                    physics:
+                        const NeverScrollableScrollPhysics(),
+                    itemCount: _controller.isEditingInventory
+                        ? _controller.editedInventory.length
+                        : _controller.originalInventory.length,
+                    separatorBuilder: (context, index) =>
+                        const Divider(height: 1),
+                    itemBuilder: (context, index) {
+                      final item = _controller.isEditingInventory
+                          ? _controller.editedInventory[index]
+                          : _controller.originalInventory[index];
+
+                      if (!_controller.isEditingInventory && item.quantity <= 0)
+                        return const SizedBox.shrink();
+
+                      return ListTile(
+                        leading: CircleAvatar(
+                          backgroundColor: Colors.grey.shade100,
+                          child: Text(
+                            item.emoji ?? '🎁',
+                            style: const TextStyle(fontSize: 20),
+                          ),
+                        ),
+                        title: Text(
+                          item.name ?? item.itemType,
+                          style: const TextStyle(fontWeight: FontWeight.w600),
+                        ),
+                        trailing: _controller.isEditingInventory
+                            ? Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.remove_circle_outline,
+                                      color: Colors.red,
+                                    ),
+                                    onPressed: () => _controller
+                                        .updateItemQuantity(item.itemType, -1),
+                                  ),
+                                  SizedBox(
+                                    width: 30,
+                                    child: Text(
+                                      '${item.quantity}',
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                      ),
+                                    ),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(
+                                      Icons.add_circle_outline,
+                                      color: Colors.green,
+                                    ),
+                                    onPressed: () => _controller
+                                        .updateItemQuantity(item.itemType, 1),
+                                  ),
+                                ],
+                              )
+                            : Text(
+                                'x${item.quantity}',
+                                style: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.amber,
+                                ),
+                              ),
+                      );
+                    },
+                  ),
+                ),
+
+                if (_controller.isEditingInventory)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    child: OutlinedButton.icon(
+                      onPressed: _showAddItemModal,
+                      icon: const Icon(Icons.add),
+                      label: const Text('Thêm phần quà mới'),
+                      style: OutlinedButton.styleFrom(
+                        minimumSize: const Size.fromHeight(48),
+                        side: const BorderSide(color: Colors.blue),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                if (_controller.isEditingInventory)
+                  Positioned(
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    child: Container(
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withOpacity(0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, -5),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _controller.isSaving
+                            ? null
+                            : () => _controller.saveInventoryChanges(
+                                widget.userId,
+                              ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                          minimumSize: const Size.fromHeight(50),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                        ),
+                        child: _controller.isSaving
+                            ? const SizedBox(
+                                width: 24,
+                                height: 24,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text(
+                                'LƯU THAY ĐỔI',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 16,
+                                ),
+                              ),
+                      ),
+                    ),
+                  ),
               ],
             ),
           );
