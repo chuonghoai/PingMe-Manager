@@ -8,5 +8,10 @@
     "name": "Quản lý Người dùng",
     "icon": "people",
     "route": "/user_management"
+  },
+  {
+    "name": "Bản đồ",
+    "icon": "map_outlined",
+    "route": "/map"
   }
 ]
