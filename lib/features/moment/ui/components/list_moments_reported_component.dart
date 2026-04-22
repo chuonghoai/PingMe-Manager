@@ -1,6 +1,7 @@
 // ignore_for_file: use_super_parameters, use_build_context_synchronously
 
 import 'package:flutter/material.dart';
+import 'package:pingme_manager/features/moment/ui/components/moment_report_detail.dart';
 import 'package:pingme_manager/features/moment/ui/moment_controller.dart';
 import 'moment_item_widget.dart';
 
@@ -77,21 +78,34 @@ class _ListMomentsReportedComponentState
                       );
                     }
                     final moment = widget.controller.reportedMoments[index];
-                    return MomentItemWidget(
-                      moment: moment,
-                      onDelete: () async {
-                        bool success = await widget.controller.deleteMoment(
-                          moment.id,
-                        );
-                        if (success && mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('Đã xóa thành công!'),
-                              backgroundColor: Colors.green,
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MomentReportDetail(
+                              momentId: moment.id,
+                              controller: widget.controller,
                             ),
-                          );
-                        }
+                          ),
+                        );
                       },
+                      child: MomentItemWidget(
+                        moment: moment,
+                        onDelete: () async {
+                          bool success = await widget.controller.deleteMoment(
+                            moment.id,
+                          );
+                          if (success && mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text('Đã xóa thành công!'),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          }
+                        },
+                      ),
                     );
                   },
                 ),
