@@ -1,0 +1,18 @@
+[
+  {
+    "icon": "person_outline",
+    "title": "Thông tin tài khoản",
+    "route": "/setting/profile"
+  },
+  {
+    "icon": "lock_outline",
+    "title": "Thay đổi mật khẩu",
+    "route": "/setting/change_password"
+  },
+  {
+    "icon": "logout",
+    "title": "Đăng xuất",
+    "route": "/logout",
+    "isDestructive": true
+  }
+]

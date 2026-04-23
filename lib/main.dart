@@ -1,122 +1,168 @@
-import 'package:flutter/material.dart';
+// ignore_for_file: unused_import, use_super_parameters, avoid_print
 
-void main() {
-  runApp(const MyApp());
+import 'package:flutter/material.dart';
+import 'package:pingme_manager/features/auth/ui/forgotPassword/verify_email_screen.dart';
+import 'package:pingme_manager/features/conversation/ui/conversation_screen.dart';
+import 'package:pingme_manager/features/map/ui/map_screen.dart';
+import 'package:pingme_manager/features/message/ui/message_screen.dart';
+import 'package:pingme_manager/features/moment/ui/moment_screen.dart';
+import 'package:pingme_manager/features/setting/ui/component/change_password/change_password_screen.dart';
+import 'package:pingme_manager/features/setting/ui/component/logout/logout_screen.dart';
+import 'package:pingme_manager/features/setting/ui/component/profile_setting/profile_setting_screen.dart';
+import 'package:pingme_manager/features/setting/ui/setting_screen.dart';
+import 'package:pingme_manager/features/user_profile/ui/user_profile_screen.dart';
+import 'core/network/api_client.dart';
+import 'core/network/api_response.dart';
+import 'core/storage/local_storage.dart';
+import 'features/auth/ui/login/login_screen.dart';
+import 'package:pingme_manager/features/call/ui/call_screen.dart';
+import 'features/home/ui/home_screen.dart';
+import 'main.dart';
+import 'shared/websocket/websocket_gateway.dart';
+
+final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  final token = await LocalStorage.getToken();
+  String initialRoute = '/login';
+
+  if (token != null && token.isNotEmpty) {
+    try {
+      final response = await ApiClient().client.get('/users/me');
+      final apiResponse = response.data as ApiResponse;
+
+      if (apiResponse.success) {
+        initialRoute = '/home';
+
+        if (apiResponse.data != null) {
+          await LocalStorage.setUser(apiResponse.data);
+        }
+
+        await WebsocketGateway().connect();
+      }
+    } catch (e) {
+      await LocalStorage.clearAll();
+      initialRoute = '/login';
+    }
+  }
+
+  runApp(MyApp(initialRoute: initialRoute));
 }
 
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
+class MyApp extends StatefulWidget {
+  final String initialRoute;
+  const MyApp({Key? key, required this.initialRoute}) : super(key: key);
 
-  // This widget is the root of your application.
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.detached:
+        print('[App Lifecycle] App Detached -> Đang ngắt Websocket...');
+        WebsocketGateway().disconnect();
+        break;
+      case AppLifecycleState.resumed:
+        WebsocketGateway().connect();
+        break;
+      default:
+        break;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'GoGo Admin',
+      navigatorKey: navigatorKey,
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        // This is the theme of your application.
-        //
-        // TRY THIS: Try running your application with "flutter run". You'll see
-        // the application has a purple toolbar. Then, without quitting the app,
-        // try changing the seedColor in the colorScheme below to Colors.green
-        // and then invoke "hot reload" (save your changes or press the "hot
-        // reload" button in a Flutter-supported IDE, or press "r" if you used
-        // the command line to start the app).
-        //
-        // Notice that the counter didn't reset back to zero; the application
-        // state is not lost during the reload. To reset the state, use hot
-        // restart instead.
-        //
-        // This works for code too, not just values: Most code changes can be
-        // tested with just a hot reload.
-        colorScheme: .fromSeed(seedColor: Colors.deepPurple),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFFF5A623)),
+        useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
+      initialRoute: widget.initialRoute,
+      routes: {
+        '/login': (context) => const LoginScreen(),
+        '/home': (context) => const HomeScreen(),
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+        // Setting
+        '/setting': (context) => const SettingScreen(),
+        '/setting/profile': (context) => const ProfileSettingScreen(),
+        '/setting/change_password': (context) => const ChangePasswordScreen(),
+        '/logout': (context) => const LogoutScreen(),
+        '/conversation': (context) => const ConversationScreen(),
 
-  // This widget is the home page of your application. It is stateful, meaning
-  // that it has a State object (defined below) that contains fields that affect
-  // how it looks.
+        // Manager
+        '/moment_management': (context) => const MomentScreen(),
 
-  // This class is the configuration for the state. It holds the values (in this
-  // case the title) provided by the parent (in this case the App widget) and
-  // used by the build method of the State. Fields in a Widget subclass are
-  // always marked "final".
+        // Map
+        '/map': (context) => const MapScreen(),
+      },
+      onGenerateRoute: (settings) {
+        // User profile
+        if (settings.name == '/user-profile') {
+          final String userId = settings.arguments as String;
 
-  final String title;
+          return MaterialPageRoute(
+            builder: (context) => UserProfileScreen(userId: userId),
+          );
+        }
 
-  @override
-  State<MyHomePage> createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    // This method is rerun every time setState is called, for instance as done
-    // by the _incrementCounter method above.
-    //
-    // The Flutter framework has been optimized to make rerunning build methods
-    // fast, so that you can just rebuild anything that needs updating rather
-    // than having to individually change instances of widgets.
-    return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-      body: Center(
-        // Center is a layout widget. It takes a single child and positions it
-        // in the middle of the parent.
-        child: Column(
-          // Column is also a layout widget. It takes a list of children and
-          // arranges them vertically. By default, it sizes itself to fit its
-          // children horizontally, and tries to be as tall as its parent.
-          //
-          // Column has various properties to control how it sizes itself and
-          // how it positions its children. Here we use mainAxisAlignment to
-          // center the children vertically; the main axis here is the vertical
-          // axis because Columns are vertical (the cross axis would be
-          // horizontal).
-          //
-          // TRY THIS: Invoke "debug painting" (choose the "Toggle Debug Paint"
-          // action in the IDE, or press "p" in the console), to see the
-          // wireframe for each widget.
-          mainAxisAlignment: .center,
-          children: [
-            const Text('You have pushed the button this many times:'),
-            Text(
-              '$_counter',
-              style: Theme.of(context).textTheme.headlineMedium,
+        // Call screen
+        if (settings.name == '/call') {
+          final Map<String, dynamic> args =
+              settings.arguments as Map<String, dynamic>;
+          
+          return MaterialPageRoute(
+            builder: (context) => CallScreen(
+              targetUserId: args['targetUserId'],
+              isVideoCall: args['isVideoCall'],
+              isIncoming: args['isIncoming'],
+              fullname: args['fullname'],
+              avatarUrl: args['avatarUrl'],
             ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Increment',
-        child: const Icon(Icons.add),
-      ),
+          );
+        }
+
+        // Message screen
+        if (settings.name == '/message') {
+          final Map<String, dynamic> args =
+              settings.arguments as Map<String, dynamic>;
+          final String conversationId = args['conversationId'];
+          final String partnerName = args['partnerName'];
+          final String? partnerAvatarUrl = args['partnerAvatarUrl'];
+          final String currentUserId = args['currentUserId'];
+          final String partnerId = args['partnerId'];
+
+          return MaterialPageRoute(
+            builder: (context) => MessageScreen(
+              conversationId: conversationId,
+              partnerName: partnerName,
+              partnerAvatarUrl: partnerAvatarUrl ?? '',
+              currentUserId: currentUserId,
+              partnerId: partnerId,
+            ),
+          );
+        }
+        return null;
+      },
     );
   }
 }
