@@ -18,38 +18,58 @@ class WebsocketGateway {
 
   List<String> onlineUsers = [];
 
+  bool _isConnecting = false;
+
   // Start connect websocket
   Future<void> connect() async {
     if (socket != null && socket!.connected) return;
+    if (_isConnecting) return;
 
-    final token = await LocalStorage.getToken();
-    if (token == null) return;
+    _isConnecting = true;
 
-    final String socketUrl = ApiClient().client.options.baseUrl;
+    try {
+      final token = await LocalStorage.getToken();
+      if (token == null) {
+        _isConnecting = false;
+        return;
+      }
 
-    socket = IO.io(
-      socketUrl,
-      IO.OptionBuilder()
-          .setTransports(['websocket'])
-          .setAuth({'token': token})
-          .disableAutoConnect()
-          .build(),
-    );
+      if (socket != null) {
+        socket!.clearListeners();
+        socket!.dispose();
+        socket = null;
+      }
 
-    socket!.connect();
+      final String socketUrl = ApiClient().client.options.baseUrl;
 
-    socket!.onConnect((_) {
-      print('🌐 [WebSocket] Đã kết nối thành công: ${socket!.id}');
-    });
-    socket!.onConnectError((err) {
-      print('❌ [WebSocket] Lỗi kết nối: $err');
-    });
-    socket!.onDisconnect((_) {
-      print('🔌 [WebSocket] Đã ngắt kết nối');
-    });
+      socket = IO.io(
+        socketUrl,
+        IO.OptionBuilder()
+            .setTransports(['websocket'])
+            .setAuth({'token': token})
+            .disableAutoConnect()
+            .build(),
+      );
 
-    // Listen global events
-    _registerGlobalListeners();
+      socket!.onConnect((_) {
+        print('🌐 [WebSocket] Đã kết nối thành công: ${socket!.id}');
+        _isConnecting = false;
+      });
+      socket!.onConnectError((err) {
+        print('❌ [WebSocket] Lỗi kết nối: $err');
+        _isConnecting = false;
+      });
+      socket!.onDisconnect((_) {
+        print('🔌 [WebSocket] Đã ngắt kết nối');
+      });
+
+      _registerGlobalListeners();
+
+      socket!.connect();
+    } catch (e) {
+      print('❌ [WebSocket] Lỗi khởi tạo: $e');
+      _isConnecting = false;
+    }
   }
 
   // Listen global events
